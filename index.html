@@ -1,0 +1,78 @@
+<!-- File: `index.html` -->
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Pixxle — setup</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<!-- top bar / document settings -->
+<div id="topbar" class="window topbar">
+    <div class="left">
+        <span id="canvasSize" class="doc-item">Canvas: — × —</span>
+    </div>
+
+    <div class="center">
+        <span class="doc-item">Zoom: <span id="docScale">0px</span></span>
+    </div>
+
+    <div class="right">
+        <label class="color-label">Color <input id="color" type="color" value="#000000"></label>
+        <button id="clear">Clear</button>
+    </div>
+</div>
+
+<!-- left tool window -->
+<aside id="tools" class="window tools" role="toolbar" aria-label="Tools">
+    <button id="pencilBtn" class="tool-btn active" data-tool="pencil" title="Pencil">✏️ Pencil</button>
+    <button id="eraserBtn" class="tool-btn" data-tool="eraser" title="Eraser">🧽 Eraser</button>
+    <button id="eyedropBtn" class="tool-btn" data-tool="eyedropper" title="Eyedropper">💉 Eyedropper</button>
+</aside>
+
+<div id="previewWindow" class="window preview-window" aria-label="Preview window">
+    <div class="preview-viewport">
+        <canvas id="previewCanvas" class="preview-canvas" aria-label="Pixel preview"></canvas>
+    </div>
+    <div class="preview-scale-row">
+        <label>Scale
+            <select id="previewScale">
+                <option value="1">1x</option>
+                <option value="2">2x</option>
+                <option value="4">4x</option>
+                <option value="8">8x</option>
+            </select>
+        </label>
+    </div>
+</div>
+
+<!-- main drawing canvas (or create panel before creation) -->
+<main class="canvas-wrap">
+    <!-- Create panel shown until user presses Create -->
+    <form id="setup" class="create-panel" aria-label="Canvas setup">
+        <div class="create-row">
+            <label>Width (cols) <input id="cols" name="cols" type="number" min="1" max="256" value="32"></label>
+            <label>Height (rows) <input id="rows" name="rows" type="number" min="1" max="256" value="32"></label>
+        </div>
+        <div class="create-row">
+            <label>Zoom (px, 0 = auto) <input id="zoom" name="zoom" type="number" min="0" max="1024" value="0"></label>
+            <label><input id="transparent" type="checkbox"> Transparent background</label>
+        </div>
+        <div class="create-actions">
+            <button type="submit">Create</button>
+        </div>
+    </form>
+
+    <canvas id="canvas" aria-label="Pixel drawing canvas" class="hidden"></canvas>
+</main>
+
+<!-- bottom bar: single-row, centered across viewport -->
+<div id="bottomBar" class="bottom-bar" role="status" aria-live="polite">
+    <div class="bottom-bar-inner">
+        <span id="coords" class="coords">x:0 y:0</span>
+    </div>
+</div>
+
+<script type="module" src="index.js" defer></script>
+</body>
+</html>
