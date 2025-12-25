@@ -9,8 +9,8 @@ export class EyeDropperTool extends Tool {
     // return picked color as CSS hex (e.g. "#rrggbb") or null
     handleDraw(model, x, y /*, color */) {
         if (!model.pixels) return null;
-        if (x < 0 || x >= model.cols || y < 0 || y >= model.rows) return null;
-        const c = model.pixels[y * model.cols + x] || 0;
+        if (x < 0 || x >= model.width || y < 0 || y >= model.height) return null;
+        const c = model.pixels[y * model.width + x] || 0;
         return intToCss(c);
     }
 }

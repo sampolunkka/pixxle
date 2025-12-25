@@ -10,18 +10,15 @@ export function createInput(mainCanvasEl, model, renderer, preview, tools, color
 
     function handleDraw(e) {
         const { x, y } = getGridPos(e.clientX, e.clientY);
-        if (x >= 0 && x < model.cols && y >= 0 && y < model.rows) {
+        if (x >= 0 && x < model.width && y >= 0 && y < model.height) {
             const tool = tools.current;
             const color = (tool.name === 'eraser') ? model.bgColor : (colorEl.value || '#000000');
-            // capture possible return value from tool (eyedropper returns a color)
             const result = tool.handleDraw(model, x, y, color);
-            // if eyedropper picked a color, update the color input and switch back to pencil
             if (tool.name === 'eyedropper' && result) {
                 try { colorEl.value = result; } catch (err) {}
                 if (pencilAfterEyedropper) {
                     tools.set('pencil');
                 }
-
             }
             renderer.render();
             preview.renderPreview();
@@ -51,7 +48,7 @@ export function createInput(mainCanvasEl, model, renderer, preview, tools, color
     mainCanvasEl.addEventListener('pointerleave', () => preview.hideHover());
 
     mainCanvasEl.addEventListener('wheel', (e) => {
-        if (!model.cols) return;
+        if (!model.width) return;
         e.preventDefault();
         const dir = Math.sign(e.deltaY) || 0;
         const step = e.shiftKey ? 4 : 1;

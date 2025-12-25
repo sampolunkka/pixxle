@@ -1,14 +1,13 @@
-// javascript
-import { intToCss } from './utils.js';
+import { intToCss, TRANSPARENT_SENTINEL, parseHexToInt } from './utils.js';
 
 export function createRenderer(canvasEl, model) {
     const ctx = canvasEl.getContext('2d');
 
     function updateCanvasSize() {
-        if (!model.cols || !model.rows) return;
+        if (!model.width || !model.height) return;
         const DPR = Math.max(1, window.devicePixelRatio || 1);
-        const cssW = model.cols * model.pixelSize;
-        const cssH = model.rows * model.pixelSize;
+        const cssW = model.width * model.pixelSize;
+        const cssH = model.height * model.pixelSize;
         canvasEl.style.width = cssW + 'px';
         canvasEl.style.height = cssH + 'px';
         canvasEl.width = Math.round(cssW * DPR);
@@ -18,20 +17,20 @@ export function createRenderer(canvasEl, model) {
     }
 
     function drawGrid() {
-        if (!model.cols || !model.rows) return;
-        const w = model.cols * model.pixelSize;
-        const h = model.rows * model.pixelSize;
+        if (!model.width || !model.height) return;
+        const w = model.width * model.pixelSize;
+        const h = model.height * model.pixelSize;
         ctx.save();
         ctx.beginPath();
         ctx.strokeStyle = 'rgba(0,0,0,0.12)';
         ctx.lineWidth = 1;
         const offset = 0.5;
-        for (let i = 0; i <= model.cols; i++) {
+        for (let i = 0; i <= model.width; i++) {
             const x = i * model.pixelSize + offset;
             ctx.moveTo(x, offset);
             ctx.lineTo(x, h + offset);
         }
-        for (let j = 0; j <= model.rows; j++) {
+        for (let j = 0; j <= model.height; j++) {
             const y = j * model.pixelSize + offset;
             ctx.moveTo(offset, y);
             ctx.lineTo(w + offset, y);
@@ -40,18 +39,49 @@ export function createRenderer(canvasEl, model) {
         ctx.restore();
     }
 
+    function drawCheckerboard() {
+        // subtle gray checkerboard
+        const c1 = '#e6e6e6';
+        const c2 = '#ffffff';
+        for (let y = 0; y < model.height; y++) {
+            for (let x = 0; x < model.width; x++) {
+                ctx.fillStyle = ((x + y) & 1) ? c1 : c2;
+                ctx.fillRect(x * model.pixelSize, y * model.pixelSize, model.pixelSize, model.pixelSize);
+            }
+        }
+    }
+
     function render() {
-        if (!model.cols || !model.rows || !model.pixels) return;
-        const w = model.cols * model.pixelSize;
-        const h = model.rows * model.pixelSize;
+        if (!model.width || !model.height || !model.pixels) return;
+        const w = model.width * model.pixelSize;
+        const h = model.height * model.pixelSize;
         ctx.clearRect(0, 0, w, h);
-        for (let y = 0; y < model.rows; y++) {
-            for (let x = 0; x < model.cols; x++) {
-                const c = model.pixels[y * model.cols + x] || 0;
+
+        // decide if checkerboard is needed (background or any pixel transparent)
+        let needsChecker = false;
+        try {
+            if (parseHexToInt(model.bgColor) === TRANSPARENT_SENTINEL) needsChecker = true;
+        } catch (e) {}
+        if (!needsChecker) {
+            for (let i = 0; i < model.pixels.length; i++) {
+                if (model.pixels[i] === TRANSPARENT_SENTINEL) { needsChecker = true; break; }
+            }
+        }
+
+        if (needsChecker) {
+            drawCheckerboard();
+        }
+
+        // draw opaque pixels on top; transparent sentinel leaves checkerboard visible
+        for (let y = 0; y < model.height; y++) {
+            for (let x = 0; x < model.width; x++) {
+                const c = model.pixels[y * model.width + x];
+                if (c === TRANSPARENT_SENTINEL) continue;
                 ctx.fillStyle = intToCss(c);
                 ctx.fillRect(x * model.pixelSize, y * model.pixelSize, model.pixelSize, model.pixelSize);
             }
         }
+
         drawGrid();
     }
 
