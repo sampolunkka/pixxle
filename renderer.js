@@ -52,7 +52,7 @@ export function createRenderer(canvasEl, model) {
     }
 
     function render() {
-        if (!model.width || !model.height || !model.pixels) return;
+        if (!model.width || !model.height || !model.previewComposite) return;
         const w = model.width * model.pixelSize;
         const h = model.height * model.pixelSize;
         ctx.clearRect(0, 0, w, h);
@@ -63,8 +63,8 @@ export function createRenderer(canvasEl, model) {
             if (parseHexToInt(model.bgColor) === TRANSPARENT_SENTINEL) needsChecker = true;
         } catch (e) {}
         if (!needsChecker) {
-            for (let i = 0; i < model.pixels.length; i++) {
-                if (model.pixels[i] === TRANSPARENT_SENTINEL) { needsChecker = true; break; }
+            for (let i = 0; i < model.previewComposite.length; i++) {
+                if (model.previewComposite[i] === TRANSPARENT_SENTINEL) { needsChecker = true; break; }
             }
         }
 
@@ -75,7 +75,7 @@ export function createRenderer(canvasEl, model) {
         // draw opaque pixels on top; transparent sentinel leaves checkerboard visible
         for (let y = 0; y < model.height; y++) {
             for (let x = 0; x < model.width; x++) {
-                const c = model.pixels[y * model.width + x];
+                const c = model.previewComposite[y * model.width + x];
                 if (c === TRANSPARENT_SENTINEL) continue;
                 ctx.fillStyle = intToCss(c);
                 ctx.fillRect(x * model.pixelSize, y * model.pixelSize, model.pixelSize, model.pixelSize);

@@ -57,20 +57,21 @@
     </div>
 </div>
 
-<main class="canvas-wrap">
-    <!-- Create panel shown until user presses Create -->
-    <form id="setup" class="create-panel" aria-label="Canvas setup">
-        <div class="create-row">
-            <label>Width <input id="width" name="width" type="number" min="1" max="256" value="32"></label>
-            <label>Height <input id="height" name="height" type="number" min="1" max="256" value="32"></label>
-        </div>
-        <div class="create-actions">
-            <button type="submit">Create</button>
-        </div>
-    </form>
+<div class="canvas-area" data-pan-enabled data-zoom-enabled>
+    <main class="canvas-wrap">
+        <form id="setup" class="create-panel" aria-label="Canvas setup">
+            <div class="create-row">
+                <label>Width <input id="width" name="width" type="number" min="1" max="256" value="32"></label>
+                <label>Height <input id="height" name="height" type="number" min="1" max="256" value="32"></label>
+            </div>
+            <div class="create-actions">
+                <button type="submit">Create</button>
+            </div>
+        </form>
 
-    <canvas id="canvas" aria-label="Pixel drawing canvas" class="hidden"></canvas>
-</main>
+        <canvas id="canvas" aria-label="Pixel drawing canvas" class="hidden"></canvas>
+    </main>
+</div>
 
 <div id="bottomBar" class="bottom-bar" role="status" aria-live="polite">
     <div class="bottom-bar-inner">

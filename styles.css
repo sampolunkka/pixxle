@@ -12,7 +12,6 @@
     --preview-w: 200px;
     --preview-h: 200px;
 
-
     --scroll-thumb: #999;
     --scroll-thumb-hover: #999;
     --scroll-track: transparent;
@@ -172,6 +171,7 @@ body {
 
 .preview-viewport {
     height: var(--preview-h);
+    width: var(--preview-w);
     max-height: calc(100% - 44px);
     max-width: 100%;
     overflow: auto;
@@ -231,12 +231,20 @@ body {
     margin-top: 4px;
 }
 
-/* main canvas positioning (centered) */
+.canvas-area {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    background: transparent;
+    pointer-events: auto;
+}
+
 .canvas-wrap {
     position: absolute;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
+    z-index: 1;
     display: flex;
     align-items: center;
     justify-content: center;

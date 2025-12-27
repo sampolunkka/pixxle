@@ -1,37 +1,6 @@
 import { intToCss, TRANSPARENT_SENTINEL, parseHexToInt } from './utils.js';
 
-export function createPreview(mainCanvasEl, model) {
-    const hover = document.createElement('div');
-    hover.id = 'pixel-preview';
-    Object.assign(hover.style, {
-        position: 'fixed', pointerEvents: 'none', boxSizing: 'border-box',
-        border: '1px solid rgba(0,0,0,0.6)', display: 'none', transform: 'translateZ(0)', zIndex: 9999
-    });
-    document.body.appendChild(hover);
-
-    function updateHoverSize() {
-        hover.style.width = model.pixelSize + 'px';
-        hover.style.height = model.pixelSize + 'px';
-    }
-    function hideHover() { hover.style.display = 'none'; }
-
-    function showHoverAt(clientX, clientY, defaultColor = '#000') {
-        if (!mainCanvasEl || !model.width) return hideHover();
-        const rect = mainCanvasEl.getBoundingClientRect();
-        const x = Math.floor((clientX - rect.left) / model.pixelSize);
-        const y = Math.floor((clientY - rect.top) / model.pixelSize);
-        if (x < 0 || x >= model.width || y < 0 || y >= model.height) return hideHover();
-        hover.style.left = (rect.left + x * model.pixelSize) + 'px';
-        hover.style.top = (rect.top + y * model.pixelSize) + 'px';
-        const cInt = model.pixels ? model.pixels[y * model.width + x] : 0;
-        if (cInt === TRANSPARENT_SENTINEL) {
-            hover.style.background = defaultColor;
-        } else {
-            hover.style.background = intToCss(cInt);
-        }
-        hover.style.display = 'block';
-    }
-
+export function createPreviewWindow(model) {
     const previewCanvas = document.getElementById('previewCanvas');
     const previewCtx = previewCanvas ? previewCanvas.getContext('2d') : null;
     const previewScaleSelect = document.getElementById('previewScale');
@@ -72,7 +41,6 @@ export function createPreview(mainCanvasEl, model) {
         previewCanvas.style.display = 'inline-block';
         updatePreviewCanvasSize();
 
-        // decide if checkerboard needed
         let needsChecker = false;
         try {
             if (parseHexToInt(model.bgColor) === TRANSPARENT_SENTINEL) needsChecker = true;
@@ -89,12 +57,10 @@ export function createPreview(mainCanvasEl, model) {
             previewCtx.clearRect(0, 0, model.width * previewScale, model.height * previewScale);
         }
 
-        // draw pixels (transparent pixels will reveal checkerboard)
         for (let y = 0; y < model.height; y++) {
             for (let x = 0; x < model.width; x++) {
                 const c = model.pixels[y * model.width + x];
                 if (c === TRANSPARENT_SENTINEL) {
-                    // leave checkerboard visible; ensure area is cleared if no checkerboard
                     if (!needsChecker) previewCtx.clearRect(x * previewScale, y * previewScale, previewScale, previewScale);
                 } else {
                     previewCtx.fillStyle = intToCss(c);
@@ -112,5 +78,5 @@ export function createPreview(mainCanvasEl, model) {
         });
     }
 
-    return { updateHoverSize, hideHover, showHoverAt, updatePreviewCanvasSize, renderPreview };
+    return { updatePreviewCanvasSize, renderPreview };
 }
