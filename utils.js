@@ -1,5 +1,5 @@
 // File: `utils.js`
-export const TRANSPARENT_SENTINEL = 0xFFFFFFFF;
+export const TRANSPARENT_SENTINEL = 0x00000000;
 
 export function parseHexToInt(hex) {
     if (!hex || hex[0] !== '#') return 0;

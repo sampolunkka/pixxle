@@ -1,7 +1,7 @@
 <!doctype html>
-<html>
+<html lang="en">
 <head>
-    <meta charset="utf-8" />
+    <meta charset="utf-8"/>
     <title>Pixxle — setup</title>
     <link rel="stylesheet" href="styles.css">
 </head>
@@ -57,21 +57,26 @@
     </div>
 </div>
 
-<div class="canvas-area" data-pan-enabled data-zoom-enabled>
-    <main class="canvas-wrap">
-        <form id="setup" class="create-panel" aria-label="Canvas setup">
-            <div class="create-row">
-                <label>Width <input id="width" name="width" type="number" min="1" max="256" value="32"></label>
-                <label>Height <input id="height" name="height" type="number" min="1" max="256" value="32"></label>
-            </div>
-            <div class="create-actions">
-                <button type="submit">Create</button>
-            </div>
-        </form>
+<main class="workspace" data-pan-enabled data-zoom-enabled>
 
-        <canvas id="canvas" aria-label="Pixel drawing canvas" class="hidden"></canvas>
-    </main>
-</div>
+    <form id="setup" class="create-panel" aria-label="Workspace setup">
+        <div class="create-row">
+            <label>Width <input id="width" name="width" type="number" min="1" max="256" value="32"></label>
+            <label>Height <input id="height" name="height" type="number" min="1" max="256" value="32"></label>
+        </div>
+        <div class="create-actions">
+            <button type="submit">Create</button>
+        </div>
+    </form>
+
+    <div class="canvas-stack hidden">
+        <canvas id="backgroundCanvas" class="layer-canvas" aria-label="Background layer"></canvas>
+        <canvas id="foregroundCanvas" class="layer-canvas" aria-label="Main artwork layer"></canvas>
+        <canvas id="overlayCanvas" class="layer-canvas" aria-label="Preview/hover layer"></canvas>
+    </div>
+
+    <div id="pixelGrid" class="pixel-grid hidden"></div>
+</main>
 
 <div id="bottomBar" class="bottom-bar" role="status" aria-live="polite">
     <div class="bottom-bar-inner">

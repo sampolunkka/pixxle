@@ -1,119 +1,114 @@
-// javascript
-import { createModel } from './model.js';
-import { createRenderer } from './renderer.js';
-import { createPreviewWindow } from './preview-window.js';
-import { InputManager } from './input-manager.js';
-import { PanHandler } from './pan-handler.js';
-import { ZoomHandler } from './zoom-handler.js';
-import { createTools } from './toolbox.js';
+// index.js
+import {Workspace} from './workspace.js';
+import {parseHexToInt} from "./utils.js";
+import {createPreviewWindow} from "./preview-window.js";
 
-const canvas = document.getElementById('canvas');
 const setupForm = document.getElementById('setup');
-const colorInput = document.getElementById('color');
-const bgColorInput = document.getElementById('bgColor');
-const bgTransparentEl = document.getElementById('bgTransparent');
-const clearBtn = document.getElementById('clear');
-const docScaleEl = document.getElementById('docScale');
-const canvasSizeEl = document.getElementById('canvasSize');
+const backgroundCanvas = document.getElementById('backgroundCanvas');
+const foregroundCanvas = document.getElementById('foregroundCanvas');
+const overlayCanvas = document.getElementById('overlayCanvas');
+const bgColorElement = document.getElementById('bgColor');
+const canvasStack = document.querySelector('.canvas-stack');
+const workspaceElement = document.querySelector('.workspace');
+const grid = document.getElementById('pixelGrid');
 
-const model = createModel();
-window.model = model;
-const renderer = createRenderer(canvas, model);
-window.renderer = renderer;
-const previewWindow = createPreviewWindow(model);
+let bgColor = parseHexToInt(bgColorElement.value);
+console.log(`bg color: ${bgColor}`);
+let zoom = 1;
+let width = 0;
+let height = 0;
+let workspace = null;
+let preview = null;
 
-// InputManager
-const rootEl = document.querySelector('.canvas-wrap') || canvas || document;
-const input = new InputManager(rootEl);
+let panX = 0, panY = 0;
+let isPanning = false;
+let startX = 0, startY = 0;
+let baseX = 0, baseY = 0;
 
-// Create tools and attach shared deps (tool preview handled inside toolbox)
-const tools = createTools({
-    inputManager: input,
-    canvas,
-    model,
-    renderer,
-    colorEl: colorInput
-});
-
-const panHandler = new PanHandler(input, document.querySelector('.canvas-wrap') || canvas);
-window.__panHandle = panHandler;
-
-const zoomHandler = new ZoomHandler(input, document.querySelector('.canvas-wrap') || canvas);
-window.__zoomHandler = zoomHandler;
-
-function setZoom(z) {
-    if (!model.width) return;
-    const newZoom = Math.max(1, Math.floor(Number(z) || 1));
-    if (newZoom === model.pixelSize) return;
-    model.setPixelSize(newZoom);
-    renderer.updateCanvasSize();
-    previewWindow.updatePreviewCanvasSize();
-    if (docScaleEl) docScaleEl.textContent = `${newZoom}px`;
-    renderer.render();
-    previewWindow.renderPreview();
-}
-
-window.setZoom = setZoom;
-window.exportPNG = () => model.exportPNG();
-
-canvas.classList.add('hidden');
-setupForm.classList.remove('hidden');
-
-function applyBackground() {
-    const transparent = bgTransparentEl ? bgTransparentEl.checked : false;
-    const bg = transparent ? '#00000000' : (bgColorInput ? bgColorInput.value : '#ffffff');
-    if (typeof model.setBackground === 'function') {
-        model.setBackground(bg);
-    } else {
-        model.clear(bg);
+function updatePixelGrid() {
+    const pixelSize = zoom;
+    if (pixelSize < 8) {
+        grid.style.display = 'none';
+        return;
     }
-    renderer.render();
-    previewWindow.renderPreview();
+    grid.style.display = '';
+    grid.style.setProperty('--pixel-size', pixelSize + 'px');
+    grid.style.width = width * zoom + 'px';
+    grid.style.height = height * zoom + 'px';
+    grid.style.transform = `translate(calc(50vw - 50% + ${panX}px), calc(50vh - 50% + ${panY}px))`;
 }
 
-if (bgColorInput) {
-    bgColorInput.addEventListener('input', () => {
-        applyBackground();
-    });
-}
-if (bgTransparentEl) {
-    bgTransparentEl.addEventListener('change', () => {
-        if (bgColorInput) bgColorInput.disabled = bgTransparentEl.checked;
-        applyBackground();
-    });
+function applyTransform() {
+    canvasStack.style.transform = `translate(calc(-50% + ${panX}px), calc(-50% + ${panY}px)) scale(${zoom})`;
+    updatePixelGrid();
 }
 
-setupForm.addEventListener('submit', (ev) => {
-    ev.preventDefault();
-    const width = Math.max(1, Math.min(256, Number(document.getElementById('width').value) || 32));
-    const height = Math.max(1, Math.min(256, Number(document.getElementById('height').value) || 32));
-    const transparent = bgTransparentEl ? bgTransparentEl.checked : false;
-    const bg = transparent ? '#00000000' : (bgColorInput ? bgColorInput.value : '#ffffff');
+workspaceElement.addEventListener('wheel', (e) => {
+    if (!e.ctrlKey && !e.metaKey) {
+        e.preventDefault();
+        const delta = Math.sign(e.deltaY);
+        zoom = Math.max(1, Math.min(16, zoom + (delta > 0 ? -1 : 1)));
+        applyTransform();
+    }
+}, { passive: false });
 
-    const res = model.init(width, height, 0, bg);
-    renderer.updateCanvasSize();
-    previewWindow.updatePreviewCanvasSize();
+setupForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    width = Math.max(1, Math.min(256, Number(document.getElementById('width').value) || 32));
+    height = Math.max(1, Math.min(256, Number(document.getElementById('height').value) || 32));
 
-    if (docScaleEl) docScaleEl.textContent = `${res.pixelSize}px`;
-    if (canvasSizeEl) canvasSizeEl.textContent = `Canvas: ${res.width} × ${res.height}`;
+    workspace = new Workspace(width, height, backgroundCanvas, foregroundCanvas, overlayCanvas, bgColor);
+    workspace.renderAll();
+
+    // Create preview window for the foreground layer
+    preview = createPreviewWindow([backgroundCanvas, foregroundCanvas]);
+    preview.renderPreview();
 
     setupForm.classList.add('hidden');
-    canvas.classList.remove('visible');
-    canvas.classList.remove('hidden');
-
-    renderer.render();
-    previewWindow.renderPreview();
+    canvasStack.classList.remove('hidden');
+    grid.classList.remove('hidden');
+    applyTransform();
 });
 
-clearBtn.addEventListener('click', () => {
-    model.clear(model.bgColor);
-    renderer.render();
-    previewWindow.renderPreview();
+canvasStack.addEventListener('pointerdown', (e) => {
+    if (e.button !== 1) return;
+    e.preventDefault();
+    isPanning = true;
+    startX = e.clientX;
+    startY = e.clientY;
+    baseX = panX;
+    baseY = panY;
+    document.body.style.cursor = 'grabbing';
 });
 
-tools.on('toolChanged', () => {
-    renderer.render();
-    previewWindow.renderPreview();
+window.addEventListener('pointermove', (e) => {
+    if (!isPanning) return;
+    panX = baseX + (e.clientX - startX);
+    panY = baseY + (e.clientY - startY);
+    applyTransform();
 });
 
-console.log('Pixxle modules loaded');
+window.addEventListener('pointerup', (e) => {
+    if (!isPanning) return;
+    isPanning = false;
+    document.body.style.cursor = '';
+});
+
+function drawPixel(workspace, x, y, color) {
+    const layer = workspace.layers[1];
+    if (!layer) return;
+    layer.model.setPixel(x, y, color);
+    layer.render();
+    if (preview) preview.renderPreview();
+}
+
+// Pointer event handler
+window.addEventListener('pointerdown', (e) => {
+    if (!workspace) return;
+    console.log('Pointer down at', e.clientX, e.clientY);
+    const rect = foregroundCanvas.getBoundingClientRect();
+    const x = Math.floor((e.clientX - rect.left) / zoom);
+    const y = Math.floor((e.clientY - rect.top) / zoom);
+    console.log('translated to pixel coords', x, y);
+    drawPixel(workspace, x, y, 0xFF0000FF); // Draw red pixel on pointer down
+});
