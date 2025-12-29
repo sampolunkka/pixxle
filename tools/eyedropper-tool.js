@@ -1,12 +1,12 @@
 import { Tool } from '../tool.js';
-import {intToCss, TRANSPARENT_SENTINEL} from '../utils.js';
+import {intToSixBitHex, TRANSPARENT_SENTINEL} from '../utils.js';
 
 export class EyeDropperTool extends Tool {
     constructor(buttonEl) {
         super('eyedropper', buttonEl);
         this.hoverBorder = '1px solid #000';
         this.hoverShadow = '0 0 1px #FFF';
-        this.hoverColor = intToCss(TRANSPARENT_SENTINEL);
+        this.hoverColor = 'rgba(0, 0, 0, 0)';
     }
 
     // return picked color as CSS hex (e.g. "#rrggbb") or null
@@ -14,7 +14,7 @@ export class EyeDropperTool extends Tool {
         if (!model.pixels) return null;
         if (x < 0 || x >= model.width || y < 0 || y >= model.height) return null;
         const c = model.pixels[y * model.width + x] || 0;
-        return intToCss(c);
+        return intToSixBitHex(c);
     }
 
     _handleUse(button, payload) {

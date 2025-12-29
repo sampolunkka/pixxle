@@ -1,4 +1,4 @@
-import {intToCss, TRANSPARENT_SENTINEL} from "./utils.js";
+import {intToSixBitHex, TRANSPARENT_SENTINEL} from "./utils.js";
 
 export class LayerRenderer {
     constructor(model, canvasElement) {
@@ -15,7 +15,7 @@ export class LayerRenderer {
             const y = Math.floor(idx / this.model.width);
             const color = this.model.getPixel(x, y);
             if (color === TRANSPARENT_SENTINEL) continue;
-            ctx.fillStyle = intToCss(color);
+            ctx.fillStyle = intToSixBitHex(color);
             ctx.fillRect(x, y, 1, 1);
         }
         this.model.clearDirty();

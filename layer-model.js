@@ -21,7 +21,7 @@ export class LayerModel {
         const idx = y * this.width + x;
         if (this.pixels[idx] !== color) {
             this.pixels[idx] = color;
-            this.dirty.add(idx); // Or use `${x},${y}`
+            this.dirty.add(idx);
         }
     }
 

@@ -9,7 +9,6 @@ export class Layer {
         this.canvas.width = width;
         this.canvas.height = height;
         this.renderer = new LayerRenderer(this.model, this.canvas);
-        this.ctx = this.canvas.getContext('2d');
     }
 
     render() {
