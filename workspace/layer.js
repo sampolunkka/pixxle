@@ -10,6 +10,7 @@ export class Layer {
         this.canvas.width = width;
         this.canvas.height = height;
         this.renderer = new LayerRenderer(this.model, this.canvas, isOverlay);
+        this.dirty = true;
     }
 
     draw(x, y, color, shape, size) {
@@ -28,13 +29,18 @@ export class Layer {
             default:
                 console.warn('Unknown shape:', shape);
         }
+        this.dirty = true;
     }
 
     render() {
-        this.renderer.render();
+        if (this.dirty) {
+            this.renderer.render();
+            this.dirty = false;
+        }
     }
 
     clear() {
         this.model.clear();
+        this.dirty = true;
     }
 }

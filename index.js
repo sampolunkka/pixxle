@@ -3,6 +3,8 @@ import {Workspace} from './workspace/workspace.js';
 import {clientPosToCanvasCoords, isInsideCanvas, sixBitHexTo0xColor} from "./utils.js";
 import {createPreviewWindow} from "./preview-window.js";
 import {PencilTool} from "./toolbox/pencil-tool.js";
+import {ToolManager} from "./toolbox/tool-manager.js";
+import {EraserTool} from "./toolbox/eraser-tool.js";
 
 const setupForm = document.getElementById('setup');
 const backgroundCanvas = document.getElementById('backgroundCanvas');
@@ -17,7 +19,21 @@ const canvasSize = document.getElementById('canvasSize');
 const coordsDisplay = document.getElementById('coordsDisplay');
 const colorPicker = document.getElementById('colorPicker');
 
-const pencil = new PencilTool();
+const toolButtons = document.querySelectorAll('.tool-btn');
+const toolMap = {
+    pencil: new PencilTool(),
+    eraser: new EraserTool()/*,
+    eyedropper: new EyedropperTool()*/
+};
+const toolManager = new ToolManager(toolMap);
+
+toolButtons.forEach(btn => {
+    btn.addEventListener('click', () => {
+        toolManager.setActiveTool(btn.dataset.tool);
+        toolButtons.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+    });
+});
 
 let bgColor = sixBitHexTo0xColor(bgColorElement.value);
 let zoom = 1;
@@ -71,7 +87,7 @@ setupForm.addEventListener('submit', (e) => {
     if (zoom < 1) zoom = 1;
 
     workspace = new Workspace(width, height, backgroundCanvas, foregroundCanvas, overlayCanvas, bgColor);
-    workspace.renderAll();
+    workspace.update();
 
     preview = createPreviewWindow([backgroundCanvas, foregroundCanvas]);
     preview.renderPreview();
@@ -106,26 +122,36 @@ window.addEventListener('pointerup', (e) => {
     document.body.style.cursor = '';
 });
 
-window.addEventListener('pointermove', (e) => {
-    if (!workspace) return;
-    if (isInsideCanvas(foregroundCanvas, e.clientX, e.clientY)) {
-        const coords = clientPosToCanvasCoords(foregroundCanvas, e.clientX, e.clientY, zoom);
-        pencil.drawOverlay(workspace, coords.x, coords.y, sixBitHexTo0xColor(colorPicker.value));
-        workspace.getOverlayLayer().render();
-    }
-});
+function hoverWithTool(workspace, x, y, color) {
+    let tool = toolManager.getActiveTool();
+    tool.drawOverlay(workspace, x, y, color);
+    workspace.update();
+}
 
-function drawPixel(workspace, x, y, color) {
-    const layer = workspace.layers[1];
-    if (!layer) return;
-    pencil.use(workspace, x, y, color);
-    workspace.getActiveLayer().render();
+function useTool(workspace, x, y, color) {
+    let tool = toolManager.getActiveTool();
+    tool.use(workspace, x, y, color);
+    workspace.update();
     if (preview) preview.renderPreview();
 }
 
+window.addEventListener('pointermove', (e) => {
+    if (!workspace) return;
+    if (!toolManager) return;
+    if (isInsideCanvas(foregroundCanvas, e.clientX, e.clientY)) {
+        overlayCanvas.classList.remove('hidden');
+        const coords = clientPosToCanvasCoords(foregroundCanvas, e.clientX, e.clientY, zoom);
+        hoverWithTool(workspace, coords.x, coords.y, sixBitHexTo0xColor(colorPicker.value));
+        workspace.update();
+    } else {
+        overlayCanvas.classList.add('hidden');
+    }
+});
+
 window.addEventListener('pointerdown', (e) => {
     if (!workspace) return;
+    if (!toolManager) return;
     if (isInsideCanvas(foregroundCanvas, e.clientX, e.clientY)) {
         const coords = clientPosToCanvasCoords(foregroundCanvas, e.clientX, e.clientY, zoom);
-        drawPixel(workspace, coords.x, coords.y, sixBitHexTo0xColor(colorPicker.value));}
+        useTool(workspace, coords.x, coords.y, sixBitHexTo0xColor(colorPicker.value));}
 });

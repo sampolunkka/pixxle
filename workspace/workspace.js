@@ -18,7 +18,7 @@ export class Workspace {
         return this.layers[2];
     }
 
-    renderAll() {
+    update() {
         this.layers.forEach(layer => layer.render());
     }
 }
