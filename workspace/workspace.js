@@ -1,5 +1,5 @@
 import {Layer} from "./layer.js";
-import {TRANSPARENT_SENTINEL} from "../utils.js";
+import {TRANSPARENT_SENTINEL} from "../const.js";
 
 export class Workspace {
     constructor(width, height, backgroundCanvasEl, foregroundCanvasEl, overlayCanvasEl, bgColor = TRANSPARENT_SENTINEL) {

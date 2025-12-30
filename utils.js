@@ -1,5 +1,3 @@
-export const TRANSPARENT_SENTINEL = 0x00000000;
-
 export function isInsideCanvas(canvas, clientX, clientY) {
     const rect = canvas.getBoundingClientRect();
     return (

@@ -47,6 +47,10 @@ let isPanning = false;
 let startX = 0, startY = 0;
 let baseX = 0, baseY = 0;
 
+let isDrawing = false;
+let lastDrawX = null;
+let lastDrawY = null;
+
 function updatePixelGrid() {
     const pixelSize = zoom;
     if (pixelSize < 8) {
@@ -135,14 +139,41 @@ function useTool(workspace, x, y, color) {
     if (preview) preview.renderPreview();
 }
 
+window.addEventListener('pointerdown', (e) => {
+    if (!workspace) return;
+    if (!toolManager) return;
+    if (isInsideCanvas(foregroundCanvas, e.clientX, e.clientY)) {
+        isDrawing = true;
+        lastDrawX = null;
+        lastDrawY = null;
+        const coords = clientPosToCanvasCoords(foregroundCanvas, e.clientX, e.clientY, zoom);
+        useTool(workspace, coords.x, coords.y, sixBitHexTo0xColor(colorPicker.value));
+        lastDrawX = coords.x;
+        lastDrawY = coords.y;
+    }
+});
+
+window.addEventListener('pointerup', () => {
+    isDrawing = false;
+    lastDrawX = null;
+    lastDrawY = null;
+});
+
 window.addEventListener('pointermove', (e) => {
     if (!workspace) return;
     if (!toolManager) return;
     if (isInsideCanvas(foregroundCanvas, e.clientX, e.clientY)) {
-        overlayCanvas.classList.remove('hidden');
         const coords = clientPosToCanvasCoords(foregroundCanvas, e.clientX, e.clientY, zoom);
-        hoverWithTool(workspace, coords.x, coords.y, sixBitHexTo0xColor(colorPicker.value));
-        workspace.update();
+        if (isDrawing && (coords.x !== lastDrawX || coords.y !== lastDrawY)) {
+            useTool(workspace, coords.x, coords.y, sixBitHexTo0xColor(colorPicker.value));
+            lastDrawX = coords.x;
+            lastDrawY = coords.y;
+        } else {
+            overlayCanvas.classList.remove('hidden');
+            const coords = clientPosToCanvasCoords(foregroundCanvas, e.clientX, e.clientY, zoom);
+            hoverWithTool(workspace, coords.x, coords.y, sixBitHexTo0xColor(colorPicker.value));
+            workspace.update();
+        }
     } else {
         overlayCanvas.classList.add('hidden');
     }

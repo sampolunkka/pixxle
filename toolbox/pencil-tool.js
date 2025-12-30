@@ -4,8 +4,8 @@ import {Tool} from "./tool.js";
 export class PencilTool extends Tool {
     constructor() {
         super('Pencil');
-        this.shape = Shape.CIRCLE;
-        this.size = 5;
+        this.shape = Shape.SQUARE;
+        this.size = 1;
     }
 
     getShape() {
@@ -22,8 +22,8 @@ export class PencilTool extends Tool {
     }
 
     drawOverlay(workspace, x, y, color) {
-        let overlayLayer = workspace.getOverlayLayer();
-        overlayLayer.clear();
-        overlayLayer.draw(x, y, color, this.shape, this.size);
+        let layer = workspace.getActiveLayer();
+        layer.clearStaging();
+        layer.stage(x, y, color, this.shape, this.size);
     }
 }

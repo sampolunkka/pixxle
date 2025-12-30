@@ -1,12 +1,12 @@
-import {Shape} from "../const.js";
+import {ERASED_SENTINEL, Shape} from "../const.js";
 import {Tool} from "./tool.js";
-import {TRANSPARENT_SENTINEL} from "../utils.js";
+import {TRANSPARENT_SENTINEL} from "../const.js";
 
 export class EraserTool extends Tool {
     constructor() {
         super('Eraser');
-        this.shape = Shape.CIRCLE;
-        this.size = 5;
+        this.shape = Shape.SQUARE;
+        this.size = 1;
     }
 
     getShape() {
@@ -23,8 +23,8 @@ export class EraserTool extends Tool {
     }
 
     drawOverlay(workspace, x, y, color) {
-        let overlayLayer = workspace.getOverlayLayer();
-        overlayLayer.clear();
-        overlayLayer.draw(x, y, 0xFF000000, this.shape, this.size);
+        let layer = workspace.getActiveLayer();
+        layer.clearStaging();
+        layer.stage(x, y, ERASED_SENTINEL, this.shape, this.size);
     }
 }
