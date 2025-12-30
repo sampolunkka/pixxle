@@ -1,0 +1,29 @@
+import {Shape} from "../const.js";
+import {Tool} from "./tool.js";
+
+export class PencilTool extends Tool {
+    constructor() {
+        super('Pencil');
+        this.shape = Shape.SQUARE;
+        this.size = 1;
+    }
+
+    getShape() {
+        return this.shape;
+    }
+
+    setShape(shape) {
+        this.shape = shape;
+    }
+
+    use(workspace, x, y, color) {
+        let layer = workspace.getActiveLayer();
+        layer.draw(x, y, color, this.shape, this.size);
+    }
+
+    drawOverlay(workspace, x, y, color) {
+        let layer = workspace.getActiveLayer();
+        layer.clearStaging();
+        layer.stage(x, y, color, this.shape, this.size);
+    }
+}

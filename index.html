@@ -1,7 +1,7 @@
 <!doctype html>
-<html>
+<html lang="en">
 <head>
-    <meta charset="utf-8" />
+    <meta charset="utf-8"/>
     <title>Pixxle — setup</title>
     <link rel="stylesheet" href="styles.css">
 </head>
@@ -13,7 +13,7 @@
     </div>
 
     <div class="center">
-        <span class="doc-item">Zoom: <span id="docScale">0px</span></span>
+        <span class="doc-item">Zoom: <span id="canvasScale">1x</span></span>
     </div>
 
     <div class="right">
@@ -36,7 +36,7 @@
 
     <div id="colorWindow" class="window color-window" aria-label="Color">
         <div class="color-panel">
-            <label>Color <input id="color" type="color" value="#000000"></label>
+            <label>Color <input id="colorPicker" type="color" value="#000000"></label>
         </div>
     </div>
 </div>
@@ -57,9 +57,9 @@
     </div>
 </div>
 
-<main class="canvas-wrap">
-    <!-- Create panel shown until user presses Create -->
-    <form id="setup" class="create-panel" aria-label="Canvas setup">
+<main class="workspace" data-pan-enabled data-zoom-enabled>
+
+    <form id="setup" class="create-panel" aria-label="Workspace setup">
         <div class="create-row">
             <label>Width <input id="width" name="width" type="number" min="1" max="256" value="32"></label>
             <label>Height <input id="height" name="height" type="number" min="1" max="256" value="32"></label>
@@ -69,12 +69,18 @@
         </div>
     </form>
 
-    <canvas id="canvas" aria-label="Pixel drawing canvas" class="hidden"></canvas>
+    <div class="canvas-stack hidden">
+        <canvas id="backgroundCanvas" class="layer-canvas" aria-label="Background layer"></canvas>
+        <canvas id="foregroundCanvas" class="layer-canvas" aria-label="Main artwork layer"></canvas>
+        <canvas id="overlayCanvas" class="layer-canvas" aria-label="Preview/hover layer"></canvas>
+    </div>
+
+    <div id="pixelGrid" class="pixel-grid hidden"></div>
 </main>
 
 <div id="bottomBar" class="bottom-bar" role="status" aria-live="polite">
     <div class="bottom-bar-inner">
-        <span id="coords" class="coords">x:0 y:0</span>
+        <span id="coordsDisplay" class="coords">x:0 y:0</span>
     </div>
 </div>
 
