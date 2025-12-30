@@ -1,7 +1,8 @@
 // index.js
-import {Workspace} from './workspace.js';
+import {Workspace} from './workspace/workspace.js';
 import {clientPosToCanvasCoords, isInsideCanvas, sixBitHexTo0xColor} from "./utils.js";
 import {createPreviewWindow} from "./preview-window.js";
+import {PencilTool} from "./toolbox/pencil-tool.js";
 
 const setupForm = document.getElementById('setup');
 const backgroundCanvas = document.getElementById('backgroundCanvas');
@@ -15,10 +16,10 @@ const canvasScale = document.getElementById('canvasScale');
 const canvasSize = document.getElementById('canvasSize');
 const coordsDisplay = document.getElementById('coordsDisplay');
 const colorPicker = document.getElementById('colorPicker');
-console.log(`color picker initial value: ${colorPicker.value}`);
+
+const pencil = new PencilTool();
 
 let bgColor = sixBitHexTo0xColor(bgColorElement.value);
-console.log(`bg color: ${bgColor}`);
 let zoom = 1;
 let width = 0;
 let height = 0;
@@ -105,11 +106,20 @@ window.addEventListener('pointerup', (e) => {
     document.body.style.cursor = '';
 });
 
+window.addEventListener('pointermove', (e) => {
+    if (!workspace) return;
+    if (isInsideCanvas(foregroundCanvas, e.clientX, e.clientY)) {
+        const coords = clientPosToCanvasCoords(foregroundCanvas, e.clientX, e.clientY, zoom);
+        pencil.drawOverlay(workspace, coords.x, coords.y, sixBitHexTo0xColor(colorPicker.value));
+        workspace.getOverlayLayer().render();
+    }
+});
+
 function drawPixel(workspace, x, y, color) {
     const layer = workspace.layers[1];
     if (!layer) return;
-    layer.model.setPixel(x, y, color);
-    layer.render();
+    pencil.use(workspace, x, y, color);
+    workspace.getActiveLayer().render();
     if (preview) preview.renderPreview();
 }
 
