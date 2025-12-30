@@ -17,13 +17,11 @@ export class EraserTool extends Tool {
         this.shape = shape;
     }
 
-    use(workspace, x, y, color) {
-        let layer = workspace.getActiveLayer();
+    use(layer, x, y, color) {
         layer.draw(x, y, TRANSPARENT_SENTINEL, this.shape, this.size);
     }
 
-    drawOverlay(workspace, x, y, color) {
-        let layer = workspace.getActiveLayer();
+    drawOverlay(layer, x, y, color) {
         layer.clearStaging();
         layer.stage(x, y, ERASED_SENTINEL, this.shape, this.size);
     }

@@ -65,10 +65,11 @@ body {
     align-items: center;
 }
 
-.topbar .center {
-    gap: 16px;
-    color: #ddd;
-    font-weight: 500;
+.tool-label {
+    margin-left: 12px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
 }
 
 .inline-setup {
@@ -275,6 +276,12 @@ body {
 }
 
 /* tools/buttons */
+.tool-icon {
+    width: 20px;
+    height: 20px;
+    margin-right: 6px;
+}
+
 .tool-btn {
     color: var(--ui-foreground);
     border: 1px solid var(--ui-muted-border);

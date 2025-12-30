@@ -12,7 +12,6 @@ export function clientPosToCanvasCoords(canvas, clientX, clientY, zoom) {
     const rect = canvas.getBoundingClientRect();
     const x = Math.floor((clientX - rect.left) / zoom);
     const y = Math.floor((clientY - rect.top) / zoom);
-    console.log(`x: ${x}, y: ${y} (clientX: ${clientX}, clientY: ${clientY}, rect.left: ${rect.left}, rect.top: ${rect.top}, zoom: ${zoom})`);
     return { x, y };
 }
 

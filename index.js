@@ -18,6 +18,8 @@ const canvasScale = document.getElementById('canvasScale');
 const canvasSize = document.getElementById('canvasSize');
 const coordsDisplay = document.getElementById('coordsDisplay');
 const colorPicker = document.getElementById('colorPicker');
+const toolSize = document.getElementById('toolSize');
+const toolShape = document.getElementById('toolShape');
 
 const toolButtons = document.querySelectorAll('.tool-btn');
 const toolMap = {
@@ -47,9 +49,29 @@ let isPanning = false;
 let startX = 0, startY = 0;
 let baseX = 0, baseY = 0;
 
+// Draw interpolation state
+// Last draw values are also used for preventing redundant overlay updates
 let isDrawing = false;
 let lastDrawX = null;
 let lastDrawY = null;
+
+// Draw optimization (coelesced to animation frame)
+let drawPending = false;
+let pendingDraw = null;
+
+// Overlay optimization (coelesced to animation frame)
+let latestOverlayCoords = null;
+let overlayRenderPending = false;
+
+toolSize.addEventListener('input', () => {
+    if (!toolManager) return;
+    toolManager.setActiveToolSize(toolSize.value);
+});
+
+toolShape.addEventListener('change', () => {
+    if (!toolManager) return;
+    toolManager.setActiveToolShape(toolShape.value);
+});
 
 function updatePixelGrid() {
     const pixelSize = zoom;
@@ -81,8 +103,8 @@ workspaceElement.addEventListener('wheel', (e) => {
 
 setupForm.addEventListener('submit', (e) => {
     e.preventDefault();
-    width = Math.max(1, Math.min(256, Number(document.getElementById('width').value) || 32));
-    height = Math.max(1, Math.min(256, Number(document.getElementById('height').value) || 32));
+    width = Math.max(1, Math.min(128, Number(document.getElementById('width').value) || 32));
+    height = Math.max(1, Math.min(128, Number(document.getElementById('height').value) || 32));
     canvasSize.textContent = `${width}px - ${height}px`;
 
     let autoZoomWidth = window.innerWidth / width * 0.8;
@@ -127,16 +149,16 @@ window.addEventListener('pointerup', (e) => {
 });
 
 function hoverWithTool(workspace, x, y, color) {
-    let tool = toolManager.getActiveTool();
-    tool.drawOverlay(workspace, x, y, color);
+    toolManager.hoverActiveTool(workspace.getActiveLayer(), x, y, color);
     workspace.update();
 }
 
-function useTool(workspace, x, y, color) {
-    let tool = toolManager.getActiveTool();
-    tool.use(workspace, x, y, color);
-    workspace.update();
-    if (preview) preview.renderPreview();
+function useTool(workspace, x, y, color, shouldUpdate = true) {
+    toolManager.useActiveTool(workspace.getActiveLayer(), x, y, color);
+    if (shouldUpdate) {
+        workspace.update();
+        if (preview) preview.renderPreview();
+    }
 }
 
 window.addEventListener('pointerdown', (e) => {
@@ -159,23 +181,57 @@ window.addEventListener('pointerup', () => {
     lastDrawY = null;
 });
 
+function interpolate(workspace, x0, y0, x1, y1, color) {
+    let dx = Math.abs(x1 - x0), dy = Math.abs(y1 - y0);
+    let sx = x0 < x1 ? 1 : -1, sy = y0 < y1 ? 1 : -1;
+    let err = dx - dy;
+    while (true) {
+        useTool(workspace, x0, y0, color, false); // Don't update yet
+        if (x0 === x1 && y0 === y1) break;
+        let e2 = 2 * err;
+        if (e2 > -dy) { err -= dy; x0 += sx; }
+        if (e2 < dx) { err += dx; y0 += sy; }
+    }
+    workspace.update();
+    if (preview) preview.renderPreview();
+}
+
 window.addEventListener('pointermove', (e) => {
-    if (!workspace) return;
-    if (!toolManager) return;
-    if (isInsideCanvas(foregroundCanvas, e.clientX, e.clientY)) {
-        const coords = clientPosToCanvasCoords(foregroundCanvas, e.clientX, e.clientY, zoom);
-        if (isDrawing && (coords.x !== lastDrawX || coords.y !== lastDrawY)) {
-            useTool(workspace, coords.x, coords.y, sixBitHexTo0xColor(colorPicker.value));
-            lastDrawX = coords.x;
-            lastDrawY = coords.y;
-        } else {
-            overlayCanvas.classList.remove('hidden');
-            const coords = clientPosToCanvasCoords(foregroundCanvas, e.clientX, e.clientY, zoom);
-            hoverWithTool(workspace, coords.x, coords.y, sixBitHexTo0xColor(colorPicker.value));
-            workspace.update();
+    if (!workspace || !toolManager) return;
+    if (!isInsideCanvas(foregroundCanvas, e.clientX, e.clientY)) {
+        overlayCanvas.classList.add('hidden');
+        return;
+    }
+    const coords = clientPosToCanvasCoords(foregroundCanvas, e.clientX, e.clientY, zoom);
+
+    if (isDrawing && (coords.x !== lastDrawX || coords.y !== lastDrawY)) {
+        pendingDraw = {x0: lastDrawX, y0: lastDrawY, x1: coords.x, y1: coords.y};
+        if (!drawPending) {
+            drawPending = true;
+            requestAnimationFrame(() => {
+                if (pendingDraw && pendingDraw.x0 !== null && pendingDraw.y0 !== null) {
+                    interpolate(workspace, pendingDraw.x0, pendingDraw.y0, pendingDraw.x1, pendingDraw.y1, sixBitHexTo0xColor(colorPicker.value));
+                } else if (pendingDraw) {
+                    useTool(workspace, pendingDraw.x1, pendingDraw.y1, sixBitHexTo0xColor(colorPicker.value));
+                }
+                lastDrawX = pendingDraw.x1;
+                lastDrawY = pendingDraw.y1;
+                drawPending = false;
+                pendingDraw = null;
+            });
         }
     } else {
-        overlayCanvas.classList.add('hidden');
+        latestOverlayCoords = coords;
+        if (!overlayRenderPending) {
+            overlayRenderPending = true;
+            requestAnimationFrame(() => {
+                if (latestOverlayCoords) {
+                    overlayCanvas.classList.remove('hidden');
+                    hoverWithTool(workspace, latestOverlayCoords.x, latestOverlayCoords.y, sixBitHexTo0xColor(colorPicker.value));
+                }
+                overlayRenderPending = false;
+            });
+        }
     }
 });
 

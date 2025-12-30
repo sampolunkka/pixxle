@@ -4,12 +4,12 @@ export class Tool {
     }
 
     // Called when the tool is used (e.g., mouse click)
-    use(layer, position) {
+    use(layer, x, y, color) {
         throw new Error('use() must be implemented by subclass');
     }
 
     // Called to render the overlay (e.g., on hover)
-    renderOverlay(layer, position) {
-        throw new Error('renderOverlay() must be implemented by subclass');
+    drawOverlay(layer, x, y, color) {
+        throw new Error('drawOverlay() must be implemented by subclass');
     }
 }
