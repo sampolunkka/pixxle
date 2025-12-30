@@ -268,7 +268,7 @@ body {
     top: 0; left: 0;
     width: 0; height: 0;
     pointer-events: none;
-    z-index: 200; /* above canvas stack */
+    z-index: 200;
     background-size: var(--pixel-size, 16px) var(--pixel-size, 16px);
     background-image:
             linear-gradient(to right, rgba(0,0,0,0.12) 1px, transparent 1px),

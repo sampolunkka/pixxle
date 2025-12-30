@@ -50,10 +50,13 @@ let startX = 0, startY = 0;
 let baseX = 0, baseY = 0;
 
 // Draw interpolation state
-// Last draw values are also used for preventing redundant overlay updates
 let isDrawing = false;
 let lastDrawX = null;
 let lastDrawY = null;
+
+// Overlay optimization - only re-render when coords change
+let lastOverlayX = null;
+let lastOverlayY = null;
 
 // Draw optimization (coelesced to animation frame)
 let drawPending = false;
@@ -103,8 +106,8 @@ workspaceElement.addEventListener('wheel', (e) => {
 
 setupForm.addEventListener('submit', (e) => {
     e.preventDefault();
-    width = Math.max(1, Math.min(128, Number(document.getElementById('width').value) || 32));
-    height = Math.max(1, Math.min(128, Number(document.getElementById('height').value) || 32));
+    width = Math.max(1, Math.min(1280, Number(document.getElementById('width').value) || 32));
+    height = Math.max(1, Math.min(1280, Number(document.getElementById('height').value) || 32));
     canvasSize.textContent = `${width}px - ${height}px`;
 
     let autoZoomWidth = window.innerWidth / width * 0.8;
@@ -200,6 +203,8 @@ window.addEventListener('pointermove', (e) => {
     if (!workspace || !toolManager) return;
     if (!isInsideCanvas(foregroundCanvas, e.clientX, e.clientY)) {
         overlayCanvas.classList.add('hidden');
+        lastOverlayX  = null;
+        lastOverlayY  = null;
         return;
     }
     const coords = clientPosToCanvasCoords(foregroundCanvas, e.clientX, e.clientY, zoom);
@@ -221,16 +226,20 @@ window.addEventListener('pointermove', (e) => {
             });
         }
     } else {
-        latestOverlayCoords = coords;
-        if (!overlayRenderPending) {
-            overlayRenderPending = true;
-            requestAnimationFrame(() => {
-                if (latestOverlayCoords) {
-                    overlayCanvas.classList.remove('hidden');
-                    hoverWithTool(workspace, latestOverlayCoords.x, latestOverlayCoords.y, sixBitHexTo0xColor(colorPicker.value));
-                }
-                overlayRenderPending = false;
-            });
+        if (coords.x !== lastOverlayX || coords.y !== lastOverlayY) {
+            latestOverlayCoords = coords;
+            lastOverlayX = coords.x;
+            lastOverlayY = coords.y;
+            if (!overlayRenderPending) {
+                overlayRenderPending = true;
+                requestAnimationFrame(() => {
+                    if (latestOverlayCoords) {
+                        overlayCanvas.classList.remove('hidden');
+                        hoverWithTool(workspace, latestOverlayCoords.x, latestOverlayCoords.y, sixBitHexTo0xColor(colorPicker.value));
+                    }
+                    overlayRenderPending = false;
+                });
+            }
         }
     }
 });

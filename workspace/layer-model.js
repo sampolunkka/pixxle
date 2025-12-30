@@ -5,6 +5,7 @@ export class LayerModel {
         this.width = width;
         this.height = height;
         this.pixels = new Uint32Array(width * height);
+        this.dirtyPixels = this.dirtyPixels = new Set(Array.from({length: this.width * this.height}, (_, i) => i));
 
         if (fill !== TRANSPARENT_SENTINEL) {
             this.pixels.fill(fill);
@@ -13,10 +14,15 @@ export class LayerModel {
         console.log('LayerModel created:', width, height);
     }
 
+    markDirty(idx) {
+        this.dirtyPixels.add(idx);
+    }
+
     setPixel(x, y, color) {
         const idx = y * this.width + x;
         if (this.pixels[idx] !== color) {
             this.pixels[idx] = color;
+            this.markDirty(idx);
         }
     }
 
@@ -29,9 +35,13 @@ export class LayerModel {
             const dxLimit = Math.floor(Math.sqrt(r2 - dy * dy));
             const startX = Math.max(0, x - dxLimit);
             const endX = Math.min(this.width - 1, x + dxLimit);
-            const rowStart = py * this.width + startX;
-            const rowEnd = py * this.width + endX + 1;
-            this.pixels.fill(color, rowStart, rowEnd);
+            for (let px = startX; px <= endX; px++) {
+                const idx = py * this.width + px;
+                if (this.pixels[idx] !== color) {
+                    this.pixels[idx] = color;
+                    this.markDirty(idx);
+                }
+            }
         }
     }
 
@@ -43,9 +53,13 @@ export class LayerModel {
         const endX = Math.min(this.width - 1, x + half);
 
         for (let py = startY; py <= endY; py++) {
-            const rowStart = py * this.width + startX;
-            const rowEnd = py * this.width + endX + 1;
-            this.pixels.fill(color, rowStart, rowEnd);
+            for (let px = startX; px <= endX; px++) {
+                const idx = py * this.width + px;
+                if (this.pixels[idx] !== color) {
+                    this.pixels[idx] = color;
+                    this.markDirty(idx);
+                }
+            }
         }
     }
 
@@ -55,5 +69,10 @@ export class LayerModel {
 
     clear() {
         this.pixels.fill(TRANSPARENT_SENTINEL);
+        this.dirtyPixels = new Set(Array.from({length: this.width * this.height}, (_, i) => i));
+    }
+
+    clearDirty() {
+        this.dirtyPixels.clear();
     }
 }

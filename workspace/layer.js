@@ -11,6 +11,7 @@ export class Layer {
         this.canvas.width = width;
         this.canvas.height = height;
         this.renderer = new LayerRenderer(this, this.canvas);
+        this.previousStaging = null;
     }
 
     draw(x, y, color, shape, size) {
@@ -41,6 +42,15 @@ export class Layer {
                     break;
             }
         }
+
+        this.previousStaging = {x, y, size};
+    }
+
+    clearPreviousStagingBox() {
+        if (!this.previousStaging) return;
+        const {x, y, size} = this.previousStaging;
+        this.staged.setSquare(x, y, size, TRANSPARENT_SENTINEL);
+        this.previousStaging = null;
     }
 
     clearStaging() {

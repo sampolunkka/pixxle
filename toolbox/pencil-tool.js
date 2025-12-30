@@ -21,7 +21,7 @@ export class PencilTool extends Tool {
     }
 
     drawOverlay(layer, x, y, color) {
-        layer.clearStaging();
+        layer.clearPreviousStagingBox();
         layer.stage(x, y, color, this.shape, this.size);
     }
 }
