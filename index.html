@@ -7,7 +7,7 @@
 </head>
 <body>
 
-<div class="panel options-bar">
+<div class="options-bar">
     <div class="options-bar-left">
         <label class="tool-label">Size
             <input id="tool-size" type="range" min="1" max="16" value="1" style="width: 80px;">
@@ -37,7 +37,7 @@
 
 <div class="dock-left">
     <aside id="tools" class="panel panel-tools" aria-label="Tools">
-        <label class="label-primary">Tools</label>
+        <h2>Tools</h2>
         <button class="button-tool active" data-tool="pencil" title="Pencil">
             <img class="icon-tool" src="assets/pencil.svg" alt="Pencil" width="20" height="20">
             Pencil
@@ -49,8 +49,16 @@
     </aside>
 
     <div id="panel-color-selection" class="panel panel-color" aria-label="Color">
-        <div class="panel-color">
-            <label>Color <input id="color-picker" type="color" value="#000000"></label>
+        <h2>Color</h2>
+        <div class="panel-row">
+            <img src="assets/mouse.svg" alt="Mouse"/>
+            <label class="color-picker" aria-label="Primary color picker">
+                <input name="color" id="color-picker-primary" type="color" value="#000000"/>
+            </label>
+            <label class="color-picker" aria-label="Secondary color picker">
+                <input name="color" id="color-picker-secondary" type="color" value="#ffffff"/>
+
+            </label>
         </div>
     </div>
 </div>
@@ -78,11 +86,13 @@
 
     <form id="setup" class="modal-document-setup" aria-label="Document setup">
         <div class="modal-workspace-setup-row">
-            <label>Width <input id="width" name="width" type="number" min="1" max="1280" value="32"></label>
-            <label>Height <input id="height" name="height" type="number" min="1" max="1280" value="32"></label>
+            <label class="label-secondary">Width <input id="width" name="width" type="number" min="1" max="1280"
+                                                        value="32"></label>
+            <label class="label-secondary">Height <input id="height" name="height" type="number" min="1" max="1280"
+                                                         value="32"></label>
         </div>
-        <div class="create-actions">
-            <button type="submit">Create</button>
+        <div class="modal-workspace-setup-row">
+            <button class="button-primary" type="submit">Create</button>
         </div>
     </form>
 

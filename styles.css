@@ -2,12 +2,22 @@
 :root {
     --side-gap: 12px;
     --options-bar-height: 56px;
-    --ui-bg-solid: #3d3d3d;
     --ui-bg-gradient: linear-gradient(to bottom right, #4a4a4a, #3d3d3d);
-    --ui-border: #444;
-    --ui-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
-    --ui-foreground: #eee;
-    --ui-muted-border: #505050;
+
+    --text-primary: #f5f5f5;
+    --text-secondary: #eee;
+    --text-tertiary: #ccc;
+
+    --background-primary: #222;
+    --background-secondary: #3d3d3d;
+
+    --border-primary: #444;
+    --border-secondary: #505050;
+
+    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.2);
+    --shadow-md: 0 3px 10px rgba(0, 0, 0, 0.3);
+    --shadow-lg: 0 6px 20px rgba(0, 0, 0, 0.4);
+    --shadow-xl: 0 12px 32px rgba(0, 0, 0, 0.5);
 
     --preview-w: 200px;
     --preview-h: 200px;
@@ -22,18 +32,31 @@
 body {
     margin: 0;
     height: 100vh;
-    background: #222;
-    color: var(--ui-foreground);
+    background: var(--background-primary);
+    color: var(--text-primary);
     font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
     overflow: hidden;
 }
 
+h1 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+h2 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
 /* shared panel chrome (default: fixed) */
 .panel {
-    position: fixed;
-    background: var(--ui-bg-solid);
-    border: 1px solid var(--ui-border);
-    box-shadow: var(--ui-shadow);
+    background: var(--background-secondary);
+    border: 1px solid var(--border-primary);
+    box-shadow: var(--shadow-lg);
     padding: 8px;
     border-radius: 6px;
     backdrop-filter: blur(4px);
@@ -42,6 +65,23 @@ body {
     gap: 8px;
     align-items: center;
     box-sizing: border-box;
+}
+
+label {
+    color: var(--text-secondary);
+}
+
+.label-primary {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-secondary);
+}
+
+.label-secondary {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    font-size: 14px;
 }
 
 /* options-bar */
@@ -81,7 +121,7 @@ body {
     gap: 6px;
     align-items: center;
     font-size: 13px;
-    color: var(--ui-foreground);
+    color: var(--text-secondary);
 }
 
 .options-bar input[type="color"] {
@@ -93,10 +133,10 @@ body {
 }
 
 /* left column container: anchors under options-bar and stacks children */
-.dock-left {
+.dock-left,
+.dock-right {
     position: fixed;
     top: calc(var(--side-gap) + var(--options-bar-height));
-    left: var(--side-gap);
     display: flex;
     flex-direction: column;
     gap: 12px;
@@ -107,15 +147,16 @@ body {
     box-sizing: border-box;
 }
 
-/* let dock-left children use panel chrome but flow inside */
-.dock-left > .panel {
-    position: static;
-    transform: none;
-    width: 100%;
-    box-shadow: var(--ui-shadow);
+.dock-left {
+    left: var(--side-gap);
 }
 
-.dock-left .panel-tools {
+.dock-right {
+    right: var(--side-gap);
+}
+
+
+.panel-tools, .panel-color {
     width: 140px;
     padding: 12px;
     flex-direction: column;
@@ -130,46 +171,54 @@ body {
     gap: 4px;
 }
 
-.dock-left .panel-color {
-    width: 140px;
-    padding: 8px;
-    flex-direction: column;
-    align-items: stretch;
-}
-
 .panel-color label {
     display: flex;
     gap: 8px;
     align-items: center;
 }
 
-.panel-color input[type="color"] {
+.color-picker {
     width: 100%;
     height: 28px;
     padding: 0;
     border: none;
+    border-radius: 6px;
+    cursor: pointer;
     background: transparent;
+    box-shadow: var(--shadow-sm);
 }
 
-.dock-right {
-    position: fixed;
-    top: calc(var(--side-gap) + var(--options-bar-height));
-    right: var(--side-gap);
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    z-index: 1000;
-    max-height: calc(100vh - var(--options-bar-height) - (var(--side-gap) * 2));
-    overflow: auto;
+/* Color pickers */
+input[type="color"] {
+    width: 100%;
+    height: 100%;
     padding: 0;
-    box-sizing: border-box;
+    border: none;
+    outline: none;
+    background: transparent;
+    cursor: pointer;
+
+    -webkit-appearance: none;
+    appearance: none;
+}
+
+input[type="color"]::-webkit-color-swatch-wrapper {
+    padding: 0;
+}
+
+input[type="color"]::-webkit-color-swatch-wrapper {
+    padding: 0;
+}
+
+input[type="color"]::-webkit-color-swatch {
+    border-radius: 8px;
 }
 
 .dock-right > .panel {
     position: static;
     transform: none;
     width: 100%;
-    box-shadow: var(--ui-shadow);
+    box-shadow: var(--shadow-lg);
 }
 
 .dock-right .panel-layers {
@@ -201,7 +250,7 @@ body {
     justify-content: center;
     padding: 6px;
     background: transparent;
-    border: 1px solid var(--ui-muted-border);
+    border: 1px solid var(--border-secondary);
     box-sizing: border-box;
     min-width: 0;
     min-height: 0;
@@ -244,12 +293,10 @@ body {
 }
 
 .panel-row {
+    display: flex;
+    flex-direction: row;
+    gap: 8px;
     width: 100%;
-    text-align: center;
-}
-
-.panel-row select {
-    margin-top: 4px;
 }
 
 .workspace {
@@ -293,9 +340,9 @@ body {
 }
 
 .button-tool, .button-layer {
-    color: var(--ui-foreground);
-    border: 1px solid var(--ui-muted-border);
-    background: var(--ui-bg-solid);
+    color: var(--text-secondary);
+    border: 1px solid var(--border-secondary);
+    background: var(--background-secondary);
     padding: 8px;
     border-radius: 4px;
     text-align: left;
@@ -312,7 +359,7 @@ body {
     background: #555;
     box-shadow: 0 6px 14px rgba(0, 0, 0, 0.45), inset 0 0 0 1px rgba(255, 255, 255, 0.04);
     transform: translateY(-1px);
-    border-color: var(--ui-border);
+    border-color: var(--border-primary);
 }
 
 .layer-list-item {
@@ -340,9 +387,9 @@ body {
     padding: 0 8px;
     font-size: 14px;
     border-radius: 4px;
-    border: 1px solid var(--ui-muted-border);
-    background: var(--ui-bg-solid);
-    color: var(--ui-foreground);
+    border: 1px solid var(--border-secondary);
+    background: var(--background-secondary);
+    color: var(--text-secondary);
     cursor: pointer;
     transition: background 120ms, box-shadow 120ms, transform 120ms;
 }
@@ -359,7 +406,7 @@ body {
     background: #555;
     box-shadow: 0 6px 14px rgba(0, 0, 0, 0.45), inset 0 0 0 1px rgba(255, 255, 255, 0.04);
     transform: translateY(-1px);
-    border-color: var(--ui-border);
+    border-color: var(--border-primary);
 }
 
 .layer-list-item .button-layer:disabled,
@@ -387,7 +434,7 @@ body {
     min-height: 28px;
     padding: 0;
     background: #333;
-    border: 1px solid var(--ui-muted-border);
+    border: 1px solid var(--border-secondary);
 }
 
 .layer-list-item .button-layer.visibility-btn:hover:not(:disabled) {
@@ -412,7 +459,7 @@ body {
     line-height: 1;
 
     border-radius: 50%;
-    border: 1px solid var(--ui-muted-border);
+    border: 1px solid var(--border-secondary);
     background: #333;
     color: #eee;
 
@@ -440,10 +487,10 @@ body {
     padding: 18px;
     border-radius: 8px;
     background: var(--ui-bg-gradient);
-    border: 1px solid var(--ui-border);
+    border: 1px solid var(--border-primary);
     min-width: 320px;
     box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
-    color: var(--ui-foreground);
+    color: var(--text-secondary);
 }
 
 .modal-workspace-setup-row {
@@ -454,21 +501,13 @@ body {
     align-items: center;
 }
 
-.modal-workspace-setup-row label {
-    display: flex;
-    gap: 8px;
-    align-items: center;
-    font-size: 14px;
-    color: var(--ui-foreground);
-}
-
 .modal-workspace-setup-row input[type="number"] {
     width: 80px;
     padding: 6px 8px;
     border-radius: 6px;
     border: 1px solid rgba(0, 0, 0, 0.2);
     background: rgba(255, 255, 255, 0.02);
-    color: var(--ui-foreground);
+    color: var(--text-secondary);
     -webkit-appearance: none;
     appearance: none;
 }
@@ -478,19 +517,12 @@ body {
     height: 16px;
 }
 
-.create-actions {
-    display: flex;
-    gap: 12px;
-    width: 100%;
-    justify-content: center;
-}
-
-.create-actions button {
+.button-primary {
     padding: 8px 14px;
     border-radius: 6px;
-    border: 1px solid var(--ui-muted-border);
+    border: 1px solid var(--border-secondary);
     background: rgba(255, 255, 255, 0.04);
-    color: var(--ui-foreground);
+    color: var(--text-secondary);
     cursor: pointer;
 }
 
@@ -506,9 +538,9 @@ body {
     justify-content: center;
     align-items: center;
     padding: 8px 12px;
-    background: var(--ui-bg-solid);
-    border: 1px solid var(--ui-border);
-    box-shadow: var(--ui-shadow);
+    background: var(--background-secondary);
+    border: 1px solid var(--border-primary);
+    box-shadow: var(--shadow-lg);
     border-radius: 6px;
     z-index: 1000;
 }
