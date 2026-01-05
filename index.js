@@ -1,41 +1,33 @@
-// index.js
 import {Workspace} from './workspace/workspace.js';
 import {clientPosToCanvasCoords, isInsideCanvas, sixBitHexTo0xColor} from "./utils.js";
-import {createPreviewWindow} from "./preview-window.js";
+import {createDocumentPreview} from "./preview-window.js";
 import {PencilTool} from "./toolbox/pencil-tool.js";
 import {ToolManager} from "./toolbox/tool-manager.js";
 import {EraserTool} from "./toolbox/eraser-tool.js";
 
 const setupForm = document.getElementById('setup');
-const backgroundCanvas = document.getElementById('backgroundCanvas');
-const foregroundCanvas = document.getElementById('foregroundCanvas');
-const overlayCanvas = document.getElementById('overlayCanvas');
-const bgColorElement = document.getElementById('bgColor');
+const backgroundCanvas = document.getElementById('background-canvas');
+const foregroundCanvas = document.getElementById('foreground-canvas');
+const bgColorElement = document.getElementById('background-color-picker');
 const canvasStack = document.querySelector('.canvas-stack');
 const workspaceElement = document.querySelector('.workspace');
-const grid = document.getElementById('pixelGrid');
-const canvasScale = document.getElementById('canvasScale');
-const canvasSize = document.getElementById('canvasSize');
-const coordsDisplay = document.getElementById('coordsDisplay');
-const colorPicker = document.getElementById('colorPicker');
-const toolSize = document.getElementById('toolSize');
-const toolShape = document.getElementById('toolShape');
+const grid = document.getElementById('pixel-grid');
+const canvasScale = document.getElementById('canvas-scale');
+const canvasSize = document.getElementById('canvas-size');
+const coordsDisplay = document.getElementById('coords-display');
+const colorPicker = document.getElementById('color-picker');
+const toolSize = document.getElementById('tool-size');
+const toolShape = document.getElementById('tool-shape');
+const layersList = document.getElementById('layers-list');
+const layersPanelElement = document.getElementById('layers-panel');
 
-const toolButtons = document.querySelectorAll('.tool-btn');
+const toolButtons = document.querySelectorAll('.button-tool');
 const toolMap = {
     pencil: new PencilTool(),
     eraser: new EraserTool()/*,
     eyedropper: new EyedropperTool()*/
 };
 const toolManager = new ToolManager(toolMap);
-
-toolButtons.forEach(btn => {
-    btn.addEventListener('click', () => {
-        toolManager.setActiveTool(btn.dataset.tool);
-        toolButtons.forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-    });
-});
 
 let bgColor = sixBitHexTo0xColor(bgColorElement.value);
 let zoom = 1;
@@ -76,6 +68,93 @@ toolShape.addEventListener('change', () => {
     toolManager.setActiveToolShape(toolShape.value);
 });
 
+toolButtons.forEach(btn => {
+    btn.addEventListener('click', () => {
+        toolManager.setActiveTool(btn.dataset.tool);
+        toolButtons.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+    });
+});
+
+function createLayerListItem(index, layer, isActive) {
+    const item = document.createElement('div');
+    item.className = 'layer-list-item' +
+        (isActive ? ' active' : '') +
+        (layer.locked ? ' locked' : '');
+    item.dataset.layer = index;
+
+    // Visibility button
+    const visBtn = document.createElement('button');
+    visBtn.className = 'button-layer visibility-btn';
+    visBtn.type = 'button';
+    visBtn.title = layer.visible ? 'Hide layer' : 'Show layer';
+    visBtn.innerHTML = `<img class="icon-tool" src="assets/visibility.svg" alt="Visibility" width="20" height="20">`;
+    visBtn.dataset.action = 'toggle-visibility';
+
+    // Name button
+    const nameBtn = document.createElement('button');
+    nameBtn.className = 'button-layer name-btn';
+    nameBtn.type = 'button';
+    nameBtn.textContent = layer.locked ? 'Background' : `Layer ${index}`;
+    nameBtn.title = nameBtn.textContent;
+    nameBtn.dataset.layer = index;
+
+    if (layer.locked) nameBtn.disabled = true;
+
+    // Delete button
+    const delBtn = document.createElement('button');
+    delBtn.className = 'delete-button';
+    delBtn.type = 'button';
+    delBtn.title = 'Delete layer';
+    delBtn.innerHTML = `<img class="icon-tool" src="assets/delete.svg" alt="Delete" width="20" height="20">`;
+    delBtn.dataset.action = 'delete-layer';
+    if (layer.locked) delBtn.disabled = true;
+
+    item.appendChild(visBtn);
+    item.appendChild(nameBtn);
+    item.appendChild(delBtn);
+
+    return item;
+}
+
+function renderLayersPanel() {
+    layersList.innerHTML = '';
+    for (let i = workspace.layers.length - 1; i >= 0; i--) {
+        const layer = workspace.layers[i];
+        const isActive = i === workspace.activeLayerIdx;
+        const item = createLayerListItem(i, layer, isActive);
+        layersList.appendChild(item);
+    }
+}
+
+document.getElementById('add-layer-button').addEventListener('click', () => {
+    if (!workspace) return;
+    const newCanvas = document.createElement('canvas');
+    newCanvas.className = 'workspace-canvas';
+    newCanvas.width = workspace.width;
+    newCanvas.height = workspace.height;
+    // Insert before background canvas in stack
+    canvasStack.appendChild(newCanvas);
+    // Add to workspace
+    workspace.addLayer(newCanvas);
+    renderLayersPanel();
+    workspace.update();
+});
+
+// Layer selecting
+layersList.addEventListener('click', (e) => {
+    if (!workspace) return;
+    const btn = e.target.closest('.button-layer');
+    if (!btn || btn.classList.contains('locked')) return;
+    const match = btn.dataset.layer && btn.dataset.layer.match(/^(\d+)$/);
+    if (match) {
+        console.log("Selecting layer", match[1]);
+        const idx = parseInt(match[1], 10);
+        workspace.setActiveLayer(idx);
+        renderLayersPanel();
+    }
+});
+
 function updatePixelGrid() {
     const pixelSize = zoom;
     if (pixelSize < 8) {
@@ -95,37 +174,22 @@ function applyTransform() {
     updatePixelGrid();
 }
 
+function getMaxZoom() {
+    let maxZoomWidth = window.innerWidth / width * 0.8;
+    let maxZoomHeight = window.innerHeight / height * 0.8;
+    return Math.floor(Math.min(maxZoomWidth, maxZoomHeight));
+}
+
+// Wheel zooming
 workspaceElement.addEventListener('wheel', (e) => {
     if (!e.ctrlKey && !e.metaKey) {
         e.preventDefault();
         const delta = Math.sign(e.deltaY);
-        zoom = Math.max(1, Math.min(16, zoom + (delta > 0 ? -1 : 1)));
+        let maxZoom = getMaxZoom();
+        zoom = Math.max(1, Math.min(maxZoom, zoom + (delta > 0 ? -1 : 1)));
         applyTransform();
     }
 }, { passive: false });
-
-setupForm.addEventListener('submit', (e) => {
-    e.preventDefault();
-    width = Math.max(1, Math.min(1280, Number(document.getElementById('width').value) || 32));
-    height = Math.max(1, Math.min(1280, Number(document.getElementById('height').value) || 32));
-    canvasSize.textContent = `${width}px - ${height}px`;
-
-    let autoZoomWidth = window.innerWidth / width * 0.8;
-    let autoZoomHeight = window.innerHeight / height * 0.8;
-    zoom = Math.floor(Math.min(autoZoomWidth, autoZoomHeight));
-    if (zoom < 1) zoom = 1;
-
-    workspace = new Workspace(width, height, backgroundCanvas, foregroundCanvas, overlayCanvas, bgColor);
-    workspace.update();
-
-    preview = createPreviewWindow([backgroundCanvas, foregroundCanvas]);
-    preview.renderPreview();
-
-    setupForm.classList.add('hidden');
-    canvasStack.classList.remove('hidden');
-    grid.classList.remove('hidden');
-    applyTransform();
-});
 
 canvasStack.addEventListener('pointerdown', (e) => {
     if (e.button !== 1) return;
@@ -202,7 +266,6 @@ function interpolate(workspace, x0, y0, x1, y1, color) {
 window.addEventListener('pointermove', (e) => {
     if (!workspace || !toolManager) return;
     if (!isInsideCanvas(foregroundCanvas, e.clientX, e.clientY)) {
-        overlayCanvas.classList.add('hidden');
         lastOverlayX  = null;
         lastOverlayY  = null;
         return;
@@ -234,7 +297,6 @@ window.addEventListener('pointermove', (e) => {
                 overlayRenderPending = true;
                 requestAnimationFrame(() => {
                     if (latestOverlayCoords) {
-                        overlayCanvas.classList.remove('hidden');
                         hoverWithTool(workspace, latestOverlayCoords.x, latestOverlayCoords.y, sixBitHexTo0xColor(colorPicker.value));
                     }
                     overlayRenderPending = false;
@@ -250,4 +312,32 @@ window.addEventListener('pointerdown', (e) => {
     if (isInsideCanvas(foregroundCanvas, e.clientX, e.clientY)) {
         const coords = clientPosToCanvasCoords(foregroundCanvas, e.clientX, e.clientY, zoom);
         useTool(workspace, coords.x, coords.y, sixBitHexTo0xColor(colorPicker.value));}
+});
+
+setupForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+
+    width = document.getElementById('width').value;
+    height = document.getElementById('height').value;
+
+    canvasSize.textContent = `${width}px - ${height}px`;
+
+    zoom = getMaxZoom();
+    if (zoom < 1) zoom = 1;
+
+    workspace = new Workspace(width, height, backgroundCanvas, foregroundCanvas, bgColor);
+    workspace.update();
+
+    let canvases = canvasStack.children;
+
+    preview = createDocumentPreview(canvases);
+    preview.renderPreview();
+
+    setupForm.classList.add('hidden');
+    canvasStack.classList.remove('hidden');
+    grid.classList.remove('hidden');
+    layersPanelElement.classList.remove('hidden');
+    renderLayersPanel();
+
+    applyTransform();
 });

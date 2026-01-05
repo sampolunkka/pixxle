@@ -7,74 +7,77 @@
 </head>
 <body>
 
-<div id="topbar" class="window topbar">
-    <div class="left">
+<div class="panel options-bar">
+    <div class="options-bar-left">
         <label class="tool-label">Size
-            <input id="toolSize" type="range" min="1" max="16" value="1" style="width: 80px;">
+            <input id="tool-size" type="range" min="1" max="16" value="1" style="width: 80px;">
         </label>
         <label class="tool-label">Shape
-            <select id="toolShape">
+            <select id="tool-shape">
                 <option value="square">Square</option>
                 <option value="circle">Circle</option>
             </select>
         </label>
     </div>
 
-    <div class="center">
-        <span id="canvasSize" class="doc-item">Canvas: — × —</span>
-        <span class="doc-item">Zoom: <span id="canvasScale">1x</span></span>
+    <div class="options-bar-center">
+        <span id="canvas-size" class="doc-item">Canvas: — × —</span>
+        <span class="doc-item">Zoom: <span id="canvas-scale">1x</span></span>
     </div>
 
-    <div class="right">
-        <!-- Background controls moved to topbar -->
-        <label class="bg-label">Background color
-            <input id="bgColor" type="color" value="#ffffff">
+    <div class="options-bar-right">
+        <label class="label-secondary">Background color
+            <input id="background-color-picker" type="color" value="#ffffff">
         </label>
-        <label class="bg-label"><input id="bgTransparent" type="checkbox"> Transparent</label>
+        <label class="label-secondary"><input id="bgTransparent" type="checkbox"> Transparent</label>
 
-        <button id="clear">Clear</button>
+        <button id="clear-button">Clear</button>
     </div>
 </div>
 
-<div id="leftPane" class="left-pane">
-    <aside id="tools" class="window tools" role="toolbar" aria-label="Tools">
-        <button id="pencilBtn" class="tool-btn active" data-tool="pencil" title="Pencil">
-            <img class="tool-icon" src="assets/pencil.svg" alt="Pencil" width="20" height="20">
+<div class="dock-left">
+    <aside id="tools" class="panel panel-tools" aria-label="Tools">
+        <label class="label-primary">Tools</label>
+        <button class="button-tool active" data-tool="pencil" title="Pencil">
+            <img class="icon-tool" src="assets/pencil.svg" alt="Pencil" width="20" height="20">
             Pencil
         </button>
-        <button id="eraserBtn" class="tool-btn" data-tool="eraser" title="Eraser">
-            <img class="tool-icon" src="assets/eraser.svg" alt="Eraser" width="20" height="20">
+        <button class="button-tool" data-tool="eraser" title="Eraser">
+            <img class="icon-tool" src="assets/eraser.svg" alt="Eraser" width="20" height="20">
             Eraser
         </button>
     </aside>
 
-    <div id="colorWindow" class="window color-window" aria-label="Color">
-        <div class="color-panel">
-            <label>Color <input id="colorPicker" type="color" value="#000000"></label>
+    <div id="panel-color-selection" class="panel panel-color" aria-label="Color">
+        <div class="panel-color">
+            <label>Color <input id="color-picker" type="color" value="#000000"></label>
         </div>
     </div>
 </div>
 
-<div id="previewWindow" class="window preview-window" aria-label="Preview window">
-    <div class="preview-viewport">
-        <canvas id="previewCanvas" class="preview-canvas" aria-label="Pixel preview"></canvas>
-    </div>
-    <div class="preview-scale-row">
-        <label>Scale
-            <select id="previewScale">
-                <option value="1">1x</option>
-                <option value="2">2x</option>
-                <option value="4">4x</option>
-                <option value="8">8x</option>
-            </select>
-        </label>
-    </div>
+<div class="dock-right">
+    <aside class="panel panel-preview" aria-label="Preview">
+        <div class="preview-viewport">
+            <canvas id="canvasPreview" class="canvas-preview" aria-label="Pixel preview"></canvas>
+        </div>
+        <div class="panel-row">
+            <label class="label-secondary">Scale
+                <input id="preview-scale-input" type="range" min="1" max="8" value="1">
+            </label>
+        </div>
+    </aside>
+    <aside id="layers-panel" class="panel panel-layers hidden" aria-label="Layers panel">
+        <button id="add-layer-button" class="button-layer button-add-layer" title="Add layer">
+            +
+        </button>
+        <div id="layers-list" class="panel-layers-list"></div>
+    </aside>
 </div>
 
 <main class="workspace" data-pan-enabled data-zoom-enabled>
 
-    <form id="setup" class="create-panel" aria-label="Workspace setup">
-        <div class="create-row">
+    <form id="setup" class="modal-document-setup" aria-label="Document setup">
+        <div class="modal-workspace-setup-row">
             <label>Width <input id="width" name="width" type="number" min="1" max="1280" value="32"></label>
             <label>Height <input id="height" name="height" type="number" min="1" max="1280" value="32"></label>
         </div>
@@ -84,17 +87,16 @@
     </form>
 
     <div class="canvas-stack hidden">
-        <canvas id="backgroundCanvas" class="layer-canvas" aria-label="Background layer"></canvas>
-        <canvas id="foregroundCanvas" class="layer-canvas" aria-label="Main artwork layer"></canvas>
-        <canvas id="overlayCanvas" class="layer-canvas" aria-label="Preview/hover layer"></canvas>
+        <canvas id="background-canvas" class="workspace-canvas" aria-label="Background layer"></canvas>
+        <canvas id="foreground-canvas" class="workspace-canvas" aria-label="Main artwork layer"></canvas>
     </div>
 
-    <div id="pixelGrid" class="pixel-grid hidden"></div>
+    <div id="pixel-grid" class="pixel-grid hidden"></div>
 </main>
 
 <div id="bottomBar" class="bottom-bar" role="status" aria-live="polite">
     <div class="bottom-bar-inner">
-        <span id="coordsDisplay" class="coords">x:0 y:0</span>
+        <span id="coords-display" class="coords">x:0 y:0</span>
     </div>
 </div>
 

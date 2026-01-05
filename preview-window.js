@@ -1,7 +1,7 @@
-export function createPreviewWindow(canvases) {
-    const previewCanvas = document.getElementById('previewCanvas');
+export function createDocumentPreview(canvases) {
+    const previewCanvas = document.getElementById('preview-canvas');
     const previewCtx = previewCanvas ? previewCanvas.getContext('2d') : null;
-    const previewScaleSelect = document.getElementById('previewScale');
+    const previewScaleSelect = document.getElementById('preview-scale-input');
     let previewScale = previewScaleSelect ? Number(previewScaleSelect.value) || 1 : 1;
 
     function updatePreviewCanvasSize() {
@@ -47,5 +47,5 @@ export function createPreviewWindow(canvases) {
         });
     }
 
-    return { updatePreviewCanvasSize, renderPreview };
+    return { updatecanvasPreviewSize: updatePreviewCanvasSize, renderPreview };
 }

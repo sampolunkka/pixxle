@@ -1,9 +1,9 @@
 /* File: `styles.css` */
 :root {
     --side-gap: 12px;
-    --topbar-height: 56px;
+    --options-bar-height: 56px;
     --ui-bg-solid: #3d3d3d;
-    --ui-bg-gradient: linear-gradient(to bottom, #4a4a4a, #3d3d3d);
+    --ui-bg-gradient: linear-gradient(to bottom right, #4a4a4a, #3d3d3d);
     --ui-border: #444;
     --ui-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
     --ui-foreground: #eee;
@@ -28,8 +28,8 @@ body {
     overflow: hidden;
 }
 
-/* shared window chrome (default: fixed) */
-.window {
+/* shared panel chrome (default: fixed) */
+.panel {
     position: fixed;
     background: var(--ui-bg-solid);
     border: 1px solid var(--ui-border);
@@ -44,8 +44,8 @@ body {
     box-sizing: border-box;
 }
 
-/* topbar */
-.topbar {
+/* options-bar */
+.options-bar {
     top: var(--side-gap);
     left: var(--side-gap);
     right: var(--side-gap);
@@ -57,19 +57,12 @@ body {
     z-index: 1100; /* keep on top of other UI */
 }
 
-.topbar .left,
-.topbar .center,
-.topbar .right {
+.options-bar .options-bar-left,
+.options-bar .options-bar-center,
+.options-bar .options-bar-right {
     display: flex;
     gap: 8px;
     align-items: center;
-}
-
-.tool-label {
-    margin-left: 12px;
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
 }
 
 .inline-setup {
@@ -82,7 +75,7 @@ body {
     width: 64px;
 }
 
-/* small topbar controls */
+/* small options-bar controls */
 .bg-label {
     display: flex;
     gap: 6px;
@@ -91,7 +84,7 @@ body {
     color: var(--ui-foreground);
 }
 
-.topbar input[type="color"] {
+.options-bar input[type="color"] {
     width: 28px;
     height: 22px;
     padding: 0;
@@ -99,31 +92,30 @@ body {
     background: transparent;
 }
 
-/* left column container: anchors under topbar and stacks children */
-.left-pane {
+/* left column container: anchors under options-bar and stacks children */
+.dock-left {
     position: fixed;
-    top: calc(var(--side-gap) + var(--topbar-height));
+    top: calc(var(--side-gap) + var(--options-bar-height));
     left: var(--side-gap);
     display: flex;
     flex-direction: column;
     gap: 12px;
     z-index: 1000;
-    max-height: calc(100vh - var(--topbar-height) - (var(--side-gap) * 2));
+    max-height: calc(100vh - var(--options-bar-height) - (var(--side-gap) * 2));
     overflow: auto;
     padding: 0;
     box-sizing: border-box;
 }
 
-/* let left-pane children use window chrome but flow inside */
-.left-pane > .window {
+/* let dock-left children use panel chrome but flow inside */
+.dock-left > .panel {
     position: static;
     transform: none;
     width: 100%;
     box-shadow: var(--ui-shadow);
 }
 
-/* tools (left column) */
-.left-pane .tools {
+.dock-left .panel-tools {
     width: 140px;
     padding: 12px;
     flex-direction: column;
@@ -131,21 +123,27 @@ body {
     align-items: stretch;
 }
 
-/* color window flows below tools and matches width */
-.left-pane .color-window {
+.tool-label {
+    margin-left: 12px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.dock-left .panel-color {
     width: 140px;
     padding: 8px;
     flex-direction: column;
     align-items: stretch;
 }
 
-.color-panel label {
+.panel-color label {
     display: flex;
     gap: 8px;
     align-items: center;
 }
 
-.color-panel input[type="color"] {
+.panel-color input[type="color"] {
     width: 100%;
     height: 28px;
     padding: 0;
@@ -153,21 +151,42 @@ body {
     background: transparent;
 }
 
-/* preview window (top-right) */
-.preview-window {
-    top: calc(var(--side-gap) + var(--topbar-height));
+.dock-right {
+    position: fixed;
+    top: calc(var(--side-gap) + var(--options-bar-height));
     right: var(--side-gap);
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
     z-index: 1000;
+    max-height: calc(100vh - var(--options-bar-height) - (var(--side-gap) * 2));
+    overflow: auto;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+.dock-right > .panel {
+    position: static;
+    transform: none;
+    width: 100%;
+    box-shadow: var(--ui-shadow);
+}
+
+.dock-right .panel-layers {
+    padding: 12px;
+    flex-direction: column;
+    display: flex;
+    gap: 10px;
+    align-items: stretch;
+}
+
+.panel-preview {
     width: var(--preview-w);
     min-width: 140px;
-    max-width: calc(100% - (var(--side-gap) * 2));
-    box-sizing: border-box;
-    display: flex;
     flex-direction: column;
     align-items: center;
     gap: 8px;
     padding: 8px;
-    max-height: calc(100vh - var(--topbar-height) - (var(--side-gap) * 2));
     overflow: hidden;
 }
 
@@ -216,7 +235,7 @@ body {
     background: var(--scroll-track);
 }
 
-.preview-viewport .preview-canvas {
+.preview-viewport .canvas-preview {
     display: block;
     max-width: none;
     max-height: none;
@@ -224,12 +243,12 @@ body {
     flex: 0 0 auto;
 }
 
-.preview-scale-row {
+.panel-row {
     width: 100%;
     text-align: center;
 }
 
-.preview-scale-row select {
+.panel-row select {
     margin-top: 4px;
 }
 
@@ -244,23 +263,11 @@ body {
     position: relative;
 }
 
-.layer-canvas {
+.workspace-canvas {
     transform: translate(-50%, -50%);
     position: absolute;
     image-rendering: pixelated;
     touch-action: none;
-}
-
-.layer-canvas#backgroundCanvas {
-    z-index: 0;
-}
-
-.layer-canvas.foregroundCanvas {
-    z-index: 1;
-}
-
-.layer-canvas.overlayCanvas {
-    z-index: 2;
 }
 
 .pixel-grid {
@@ -271,18 +278,21 @@ body {
     z-index: 200;
     background-size: var(--pixel-size, 16px) var(--pixel-size, 16px);
     background-image:
+            linear-gradient(to right, rgba(255,255,255,0.18) 1px, transparent 1px),
+            linear-gradient(to bottom, rgba(255,255,255,0.18) 1px, transparent 1px),
             linear-gradient(to right, rgba(0,0,0,0.12) 1px, transparent 1px),
             linear-gradient(to bottom, rgba(0,0,0,0.12) 1px, transparent 1px);
 }
 
+
 /* tools/buttons */
-.tool-icon {
+.icon-tool {
     width: 20px;
     height: 20px;
     margin-right: 6px;
 }
 
-.tool-btn {
+.button-tool, .button-layer {
     color: var(--ui-foreground);
     border: 1px solid var(--ui-muted-border);
     background: var(--ui-bg-solid);
@@ -294,18 +304,134 @@ body {
     outline: none;
 }
 
-.tool-btn:hover {
+.button-tool:hover, .button-layer:hover {
     background: #555;
 }
 
-.tool-btn.active {
+.button-tool.active, .button-layer.active {
     background: #555;
     box-shadow: 0 6px 14px rgba(0, 0, 0, 0.45), inset 0 0 0 1px rgba(255, 255, 255, 0.04);
     transform: translateY(-1px);
     border-color: var(--ui-border);
 }
 
-.create-panel {
+.layer-list-item {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 6px;
+    padding: 2px 0;
+    border-radius: 4px;
+    background: transparent;
+    transition: background 120ms;
+}
+
+.layer-list-item.active {
+    background: rgba(255,255,255,0.06);
+}
+
+.layer-list-item .button-layer,
+.layer-list-item .delete-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 28px;
+    min-height: 28px;
+    padding: 0 8px;
+    font-size: 14px;
+    border-radius: 4px;
+    border: 1px solid var(--ui-muted-border);
+    background: var(--ui-bg-solid);
+    color: var(--ui-foreground);
+    cursor: pointer;
+    transition: background 120ms, box-shadow 120ms, transform 120ms;
+}
+
+.layer-list-item .button-layer.name-btn {
+    flex: 1 1 auto;
+    justify-content: flex-start;
+    text-align: left;
+    padding-left: 10px;
+    font-weight: 500;
+}
+
+.layer-list-item.active .button-layer.name-btn {
+    background: #555;
+    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.45), inset 0 0 0 1px rgba(255, 255, 255, 0.04);
+    transform: translateY(-1px);
+    border-color: var(--ui-border);
+}
+
+.layer-list-item .button-layer:disabled,
+.layer-list-item .delete-button:disabled {
+    opacity: 0.5;
+    cursor: default;
+}
+
+.layer-list-item .delete-button {
+    min-width: 28px;
+    min-height: 28px;
+    padding: 0;
+    background: #3a2323;
+    color: #fff;
+    border: 1px solid #6a3a3a;
+}
+
+.layer-list-item .delete-button:hover:not(:disabled) {
+    background: #a33;
+    border-color: #c44;
+}
+
+.layer-list-item .button-layer.visibility-btn {
+    min-width: 28px;
+    min-height: 28px;
+    padding: 0;
+    background: #333;
+    border: 1px solid var(--ui-muted-border);
+}
+
+.layer-list-item .button-layer.visibility-btn:hover:not(:disabled) {
+    background: #444;
+}
+
+.layer-list-item .icon-tool {
+    margin: 0;
+}
+
+.button-layer.button-add-layer {
+    width: 28px;
+    height: 28px;
+    align-self: center;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    font-size: 18px;
+    font-weight: 600;
+    line-height: 1;
+
+    border-radius: 50%;
+    border: 1px solid var(--ui-muted-border);
+    background: #333;
+    color: #eee;
+
+    cursor: pointer;
+    transition: background 120ms, box-shadow 120ms, transform 120ms;
+}
+
+.button-layer.button-add-layer:hover {
+    background: #444;
+}
+
+.panel-layers-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    align-items: stretch;
+}
+
+.modal-document-setup {
     display: flex;
     flex-direction: column;
     gap: 12px;
@@ -320,7 +446,7 @@ body {
     color: var(--ui-foreground);
 }
 
-.create-row {
+.modal-workspace-setup-row {
     display: flex;
     gap: 12px;
     width: 100%;
@@ -328,7 +454,7 @@ body {
     align-items: center;
 }
 
-.create-row label {
+.modal-workspace-setup-row label {
     display: flex;
     gap: 8px;
     align-items: center;
@@ -336,7 +462,7 @@ body {
     color: var(--ui-foreground);
 }
 
-.create-row input[type="number"] {
+.modal-workspace-setup-row input[type="number"] {
     width: 80px;
     padding: 6px 8px;
     border-radius: 6px;
@@ -347,7 +473,7 @@ body {
     appearance: none;
 }
 
-.create-row input[type="checkbox"] {
+.modal-workspace-setup-row input[type="checkbox"] {
     width: 16px;
     height: 16px;
 }

@@ -18,7 +18,7 @@ export class ToolManager {
         // Save current tool settings for prev tool
         if (this.activeToolName) {
             this.toolSettings[this.activeToolName] = {
-                size: Number(document.getElementById('toolSize').value),
+                size: Number(document.getElementById('tool-size').value),
                 shape: document.getElementById('toolShape').value
             };
         }
@@ -26,7 +26,7 @@ export class ToolManager {
 
         // Restore tool settings for newly active tool
         const { size, shape } = this.toolSettings[name];
-        document.getElementById('toolSize').value = size;
+        document.getElementById('tool-size').value = size;
         document.getElementById('toolShape').value = shape;
     }
 

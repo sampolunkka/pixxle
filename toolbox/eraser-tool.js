@@ -22,7 +22,7 @@ export class EraserTool extends Tool {
     }
 
     drawOverlay(layer, x, y, color) {
-        layer.clearStaging();
-        layer.stage(x, y, ERASED_SENTINEL, this.shape, this.size);
+        layer.clearPreviousOverlayBox();
+        layer.drawOverlay(x, y, ERASED_SENTINEL, this.shape, this.size);
     }
 }

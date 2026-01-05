@@ -12,14 +12,14 @@ export class LayerRenderer {
         const ctx = this.canvas.getContext('2d');
         ctx.imageSmoothingEnabled = false;
 
-        const width = this.layer.committed.width;
-        const committed = this.layer.committed.pixels;
-        const staged = this.layer.staged.pixels;
+        const width = this.layer.width;
+        const committed = this.layer.model.pixels;
+        const staged = this.layer.overlay.pixels;
 
         // Render only dirty pixels
         const dirty = new Set([
-            ...this.layer.committed.dirtyPixels,
-            ...this.layer.staged.dirtyPixels
+            ...this.layer.model.dirtyPixels,
+            ...this.layer.overlay.dirtyPixels
         ]);
         for (const i of dirty) {
             const x = i % width;
@@ -33,7 +33,7 @@ export class LayerRenderer {
             }
         }
 
-        this.layer.committed.clearDirty();
-        this.layer.staged.clearDirty();
+        this.layer.model.clearDirty();
+        this.layer.overlay.clearDirty();
     }
 }

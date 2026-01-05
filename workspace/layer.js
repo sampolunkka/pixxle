@@ -4,66 +4,71 @@ import {TRANSPARENT_SENTINEL} from '../const.js';
 import {Shape} from '../const.js';
 
 export class Layer {
-    constructor(width, height, canvasElement, fillColor = TRANSPARENT_SENTINEL) {
-        this.committed = new LayerModel(width, height, fillColor);
-        this.staged = new LayerModel(width, height, TRANSPARENT_SENTINEL);
+    constructor(width, height, canvasElement, fillColor = TRANSPARENT_SENTINEL, locked = false, zIndex = 0) {
+        // Layer properties
+        this.width = width;
+        this.height = height;
+        this.locked = locked;
+        this.visible = true;
+        this.zIndex = 0;
+
+        // Layer model
+        this.model = new LayerModel(width, height, fillColor);
+
+        // Overlay (staged) model
+        this.overlay = new LayerModel(width, height, TRANSPARENT_SENTINEL);
+        this.modifiedIndices = new Set();
+        this.previousOverlay = null;
+
+        // Canvas setup
         this.canvas = canvasElement;
+        this.canvas.style.zIndex = zIndex;
         this.canvas.width = width;
         this.canvas.height = height;
         this.renderer = new LayerRenderer(this, this.canvas);
-        this.previousStaging = null;
     }
 
     draw(x, y, color, shape, size) {
         if (size === 1) {
-            this.committed.setPixel(x, y, color);
+            this.model.setPixel(x, y, color);
         } else {
             switch (shape) {
                 case Shape.CIRCLE:
-                    this.committed.setCircle(x, y, size, color);
+                    this.model.setCircle(x, y, size, color);
                     break;
                 case Shape.SQUARE:
-                    this.committed.setSquare(x, y, size, color);
+                    this.model.setSquare(x, y, size, color);
                     break;
             }
         }
     }
 
-    stage(x, y, color, shape, size) {
+    drawOverlay(x, y, color, shape, size) {
         if (size === 1) {
-            this.staged.setPixel(x, y, color);
+            this.overlay.setPixel(x, y, color);
         } else {
             switch (shape) {
                 case Shape.CIRCLE:
-                    this.staged.setCircle(x, y, size, color);
+                    this.overlay.setCircle(x, y, size, color);
                     break;
                 case Shape.SQUARE:
-                    this.staged.setSquare(x, y, size, color);
+                    this.overlay.setSquare(x, y, size, color);
                     break;
             }
         }
 
-        this.previousStaging = {x, y, size};
+        this.previousOverlay = {x, y, size};
     }
 
-    clearPreviousStagingBox() {
-        if (!this.previousStaging) return;
-        const {x, y, size} = this.previousStaging;
-        this.staged.setSquare(x, y, size, TRANSPARENT_SENTINEL);
-        this.previousStaging = null;
+    clearPreviousOverlayBox() {
+        if (!this.previousOverlay) return;
+        const {x, y, size} = this.previousOverlay;
+        this.overlay.setSquare(x, y, size, TRANSPARENT_SENTINEL);
+        this.previousOverlay = null;
     }
 
-    clearStaging() {
-        this.staged.clear();
-    }
-
-    commitStaging() {
-        for (let i = 0; i < this.staged.pixels.length; i++) {
-            if (this.staged.pixels[i] !== TRANSPARENT_SENTINEL) {
-                this.committed.pixels[i] = this.staged.pixels[i];
-            }
-        }
-        this.clearStaging();
+    clearOverlay() {
+        this.overlay.clear();
     }
 
     render() {
@@ -71,7 +76,12 @@ export class Layer {
     }
 
     clear() {
-        this.committed.clear();
-        this.clearStaging();
+        this.model.clear();
+        this.clearOverlay();
+    }
+
+    setZIndex(zIndex) {
+        this.zIndex = zIndex;
+        this.canvas.style.zIndex = zIndex;
     }
 }
