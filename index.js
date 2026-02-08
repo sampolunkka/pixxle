@@ -4,6 +4,7 @@ import {createDocumentPreview} from "./preview-window.js";
 import {PencilTool} from "./toolbox/pencil-tool.js";
 import {ToolManager} from "./toolbox/tool-manager.js";
 import {EraserTool} from "./toolbox/eraser-tool.js";
+import {ColorPalette} from "./bottom-bar/color-palette.js";
 
 const setupForm = document.getElementById('setup');
 const backgroundCanvas = document.getElementById('background-canvas');
@@ -14,12 +15,11 @@ const workspaceElement = document.querySelector('.workspace');
 const grid = document.getElementById('pixel-grid');
 const canvasScale = document.getElementById('canvas-scale');
 const canvasSize = document.getElementById('canvas-size');
-const coordsDisplay = document.getElementById('coords-display');
-const colorPicker = document.getElementById('color-picker-primary');
 const toolSize = document.getElementById('tool-size');
 const toolShape = document.getElementById('tool-shape');
 const layersList = document.getElementById('layers-list');
 const layersPanelElement = document.getElementById('layers-panel');
+const paletteContainer = document.querySelector('.bottom-bar');
 
 const toolButtons = document.querySelectorAll('.button-tool');
 const toolMap = {
@@ -42,6 +42,7 @@ let startX = 0, startY = 0;
 let baseX = 0, baseY = 0;
 
 // Draw interpolation state
+const drawInterpolation = true;
 let isDrawing = false;
 let lastDrawX = null;
 let lastDrawY = null;
@@ -236,7 +237,7 @@ window.addEventListener('pointerdown', (e) => {
         lastDrawX = null;
         lastDrawY = null;
         const coords = clientPosToCanvasCoords(foregroundCanvas, e.clientX, e.clientY, zoom);
-        useTool(workspace, coords.x, coords.y, sixBitHexTo0xColor(colorPicker.value));
+        useTool(workspace, coords.x, coords.y, sixBitHexTo0xColor(colorPalette.getPrimaryColor()));
         lastDrawX = coords.x;
         lastDrawY = coords.y;
     }
@@ -253,7 +254,7 @@ function interpolate(workspace, x0, y0, x1, y1, color) {
     let sx = x0 < x1 ? 1 : -1, sy = y0 < y1 ? 1 : -1;
     let err = dx - dy;
     while (true) {
-        useTool(workspace, x0, y0, color, false); // Don't update yet
+        useTool(workspace, x0, y0, color, false);
         if (x0 === x1 && y0 === y1) break;
         let e2 = 2 * err;
         if (e2 > -dy) { err -= dy; x0 += sx; }
@@ -277,10 +278,11 @@ window.addEventListener('pointermove', (e) => {
         if (!drawPending) {
             drawPending = true;
             requestAnimationFrame(() => {
-                if (pendingDraw && pendingDraw.x0 !== null && pendingDraw.y0 !== null) {
-                    interpolate(workspace, pendingDraw.x0, pendingDraw.y0, pendingDraw.x1, pendingDraw.y1, sixBitHexTo0xColor(colorPicker.value));
+                let color0x = sixBitHexTo0xColor(colorPalette.getPrimaryColor());
+                if (drawInterpolation && pendingDraw && pendingDraw.x0 !== null && pendingDraw.y0 !== null) {
+                    interpolate(workspace, pendingDraw.x0, pendingDraw.y0, pendingDraw.x1, pendingDraw.y1, color0x);
                 } else if (pendingDraw) {
-                    useTool(workspace, pendingDraw.x1, pendingDraw.y1, sixBitHexTo0xColor(colorPicker.value));
+                    useTool(workspace, pendingDraw.x1, pendingDraw.y1, color0x);
                 }
                 lastDrawX = pendingDraw.x1;
                 lastDrawY = pendingDraw.y1;
@@ -297,7 +299,7 @@ window.addEventListener('pointermove', (e) => {
                 overlayRenderPending = true;
                 requestAnimationFrame(() => {
                     if (latestOverlayCoords) {
-                        hoverWithTool(workspace, latestOverlayCoords.x, latestOverlayCoords.y, sixBitHexTo0xColor(colorPicker.value));
+                        hoverWithTool(workspace, latestOverlayCoords.x, latestOverlayCoords.y, sixBitHexTo0xColor(colorPalette.getPrimaryColor()));
                     }
                     overlayRenderPending = false;
                 });
@@ -311,7 +313,7 @@ window.addEventListener('pointerdown', (e) => {
     if (!toolManager) return;
     if (isInsideCanvas(foregroundCanvas, e.clientX, e.clientY)) {
         const coords = clientPosToCanvasCoords(foregroundCanvas, e.clientX, e.clientY, zoom);
-        useTool(workspace, coords.x, coords.y, sixBitHexTo0xColor(colorPicker.value));}
+        useTool(workspace, coords.x, coords.y, sixBitHexTo0xColor(colorPalette.getPrimaryColor()));}
 });
 
 setupForm.addEventListener('submit', (e) => {
@@ -341,3 +343,22 @@ setupForm.addEventListener('submit', (e) => {
 
     applyTransform();
 });
+
+const colors = [
+    "#ffa502", // warm amber
+    "#ff6b6b", // coral red
+    "#ff9ff3", // soft pink
+    "#48dbfb", // sky blue
+    "#1dd1a1", // mint green
+    "#10ac84", // teal
+    "#54a0ff", // bright blue
+    "#5f27cd", // royal purple
+    "#222f3e", // deep navy
+    "#c8d6e5", // light gray-blue
+];
+
+const colorPalette = new ColorPalette(paletteContainer, colors);
+
+function init() {
+
+}

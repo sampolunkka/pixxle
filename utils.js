@@ -24,3 +24,16 @@ export function intToSixBitHex(i) {
     let hex = (i >>> 0).toString(16).padStart(8, '0');
     return '#' + hex.slice(0, 6);
 }
+
+export function makeRandomHex(min = 0, max = 255) {
+    const clamp = v => Math.min(255, Math.max(0, v));
+    min = clamp(min);
+    max = clamp(max);
+
+    const rand = () =>
+        Math.floor(Math.random() * (max - min + 1) + min)
+            .toString(16)
+            .padStart(2, "0");
+
+    return `#${rand()}${rand()}${rand()}`;
+}

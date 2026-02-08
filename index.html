@@ -47,26 +47,12 @@
             Eraser
         </button>
     </aside>
-
-    <div id="panel-color-selection" class="panel panel-color" aria-label="Color">
-        <h2>Color</h2>
-        <div class="panel-row">
-            <img src="assets/mouse.svg" alt="Mouse"/>
-            <label class="color-picker" aria-label="Primary color picker">
-                <input name="color" id="color-picker-primary" type="color" value="#000000"/>
-            </label>
-            <label class="color-picker" aria-label="Secondary color picker">
-                <input name="color" id="color-picker-secondary" type="color" value="#ffffff"/>
-
-            </label>
-        </div>
-    </div>
 </div>
 
 <div class="dock-right">
     <aside class="panel panel-preview" aria-label="Preview">
         <div class="preview-viewport">
-            <canvas id="canvasPreview" class="canvas-preview" aria-label="Pixel preview"></canvas>
+            <canvas id="preview-canvas" class="canvas-preview" aria-label="Pixel preview"></canvas>
         </div>
         <div class="panel-row">
             <label class="label-secondary">Scale
@@ -75,7 +61,7 @@
         </div>
     </aside>
     <aside id="layers-panel" class="panel panel-layers hidden" aria-label="Layers panel">
-        <button id="add-layer-button" class="button-layer button-add-layer" title="Add layer">
+        <button id="add-layer-button" class="button-layer button-add-item" title="Add layer">
             +
         </button>
         <div id="layers-list" class="panel-layers-list"></div>
@@ -104,10 +90,7 @@
     <div id="pixel-grid" class="pixel-grid hidden"></div>
 </main>
 
-<div id="bottomBar" class="bottom-bar" role="status" aria-live="polite">
-    <div class="bottom-bar-inner">
-        <span id="coords-display" class="coords">x:0 y:0</span>
-    </div>
+<div class="bottom-bar" aria-live="polite">
 </div>
 
 <script type="module" src="index.js" defer></script>

@@ -23,12 +23,14 @@ export function createDocumentPreview(canvases) {
         const baseCanvas = canvases[0];
         if (!previewCtx || !baseCanvas || !baseCanvas.width) {
             if (previewCanvas) previewCanvas.style.display = 'none';
+            console.log("Preview canvas or base canvas not ready, skipping preview render");
             return;
         }
         previewCanvas.style.display = 'inline-block';
         updatePreviewCanvasSize();
         previewCtx.clearRect(0, 0, baseCanvas.width * previewScale, baseCanvas.height * previewScale);
 
+        console.log("Rendering preview with scale:", previewScale);
         for (const c of canvases) {
             if (!c) continue;
             previewCtx.drawImage(
@@ -47,5 +49,5 @@ export function createDocumentPreview(canvases) {
         });
     }
 
-    return { updatecanvasPreviewSize: updatePreviewCanvasSize, renderPreview };
+    return { updatePreviewCanvasSize: updatePreviewCanvasSize, renderPreview };
 }
