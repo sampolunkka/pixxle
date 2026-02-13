@@ -7,8 +7,32 @@
 </head>
 <body>
 
-<div class="options-bar">
-    <div class="options-bar-left">
+<div class="top-bar hidden">
+    <button class="button-tool active" data-tool="pencil" title="Pencil">
+        <img src="assets/pencil.svg" alt="Pencil" width="32" height="32">
+    </button>
+    <button class="button-tool" data-tool="eraser" title="Eraser">
+        <img src="assets/eraser.svg" alt="Eraser" width="32" height="32">
+    </button>
+    <button class="button-tool disabled" data-tool="line" title="Line">
+        <img src="assets/line.svg" alt="Line" width="32" height="32">
+    </button>
+    <button class="button-tool disabled" data-tool="rectangle" title="Rectangle">
+        <img src="assets/rectangle.svg" alt="Rectangle" width="28" height="28">
+    </button>
+    <button class="button-tool disabled" data-tool="circle" title="Circle">
+        <img src="assets/circle.svg" alt="Circle" width="32" height="32">
+    </button>
+    <button class="button-tool disabled" data-tool="selection" title="Selection">
+        <img src="assets/selection.svg" alt="Selection" width="32" height="32">
+    </button>
+    <button class="button-tool disabled" data-tool="eyedropper" title="Eyedropper">
+        <img src="assets/eyedropper.svg" alt="Eyedropper" width="32" height="32">
+    </button>
+</div>
+
+<div class="left-bar hidden">
+    <aside id="document-settings" class="panel panel-document-settings" aria-label="Document settings">
         <label class="tool-label">Size
             <input id="tool-size" type="range" min="1" max="16" value="1" style="width: 80px;">
         </label>
@@ -18,49 +42,19 @@
                 <option value="circle">Circle</option>
             </select>
         </label>
-    </div>
-
-    <div class="options-bar-center">
         <span id="canvas-size" class="doc-item">Canvas: — × —</span>
         <span class="doc-item">Zoom: <span id="canvas-scale">1x</span></span>
-    </div>
-
-    <div class="options-bar-right">
         <label class="label-secondary">Background color
             <input id="background-color-picker" type="color" value="#ffffff">
         </label>
         <label class="label-secondary"><input id="bgTransparent" type="checkbox"> Transparent</label>
 
         <button id="clear-button">Clear</button>
-    </div>
-</div>
-
-<div class="dock-left">
-    <aside id="tools" class="panel panel-tools" aria-label="Tools">
-        <h2>Tools</h2>
-        <button class="button-tool active" data-tool="pencil" title="Pencil">
-            <img class="icon-tool" src="assets/pencil.svg" alt="Pencil" width="20" height="20">
-            Pencil
-        </button>
-        <button class="button-tool" data-tool="eraser" title="Eraser">
-            <img class="icon-tool" src="assets/eraser.svg" alt="Eraser" width="20" height="20">
-            Eraser
-        </button>
     </aside>
 </div>
 
-<div class="dock-right">
-    <aside class="panel panel-preview" aria-label="Preview">
-        <div class="preview-viewport">
-            <canvas id="preview-canvas" class="canvas-preview" aria-label="Pixel preview"></canvas>
-        </div>
-        <div class="panel-row">
-            <label class="label-secondary">Scale
-                <input id="preview-scale-input" type="range" min="1" max="8" value="1">
-            </label>
-        </div>
-    </aside>
-    <aside id="layers-panel" class="panel panel-layers hidden" aria-label="Layers panel">
+<div class="right-bar hidden">
+    <aside id="layers-panel" class="panel panel-layers" aria-label="Layers panel">
         <button id="add-layer-button" class="button-layer button-add-item" title="Add layer">
             +
         </button>
@@ -90,7 +84,7 @@
     <div id="pixel-grid" class="pixel-grid hidden"></div>
 </main>
 
-<div class="bottom-bar" aria-live="polite">
+<div class="bottom-bar hidden">
 </div>
 
 <script type="module" src="index.js" defer></script>

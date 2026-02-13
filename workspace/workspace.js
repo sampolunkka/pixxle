@@ -2,9 +2,8 @@ import {Layer} from "./layer.js";
 import {TRANSPARENT_SENTINEL} from "../const.js";
 
 export class Workspace {
-    constructor(width, height, backgroundCanvasEl, foregroundCanvasEl, bgColor = TRANSPARENT_SENTINEL) {
+    constructor(width, height, backgroundCanvasEl, foregroundCanvasEl, bgColor = TRANSPARENT_SENTINEL, renderOnCreation = true) {
 
-        // Workspace properties
         this.width = width;
         this.height = height;
         this.activeLayerIdx = 1;
@@ -13,6 +12,13 @@ export class Workspace {
             new Layer(width, height, backgroundCanvasEl, bgColor, true),
             new Layer(width, height, foregroundCanvasEl)
         ];
+
+        if (renderOnCreation) {
+            this.layers.forEach((layer, index) => {
+                layer.setZIndex(index + 1);
+                layer.renderInitial();
+            });
+        }
     }
 
     addLayer(canvasElement) {
@@ -38,5 +44,12 @@ export class Workspace {
             layer.setZIndex(index + 1);
             layer.render();
         });
+    }
+
+    clearOverlays() {
+        this.layers.forEach((layer, index) => {
+            layer.clearPreviousOverlayBox();
+            layer.render();
+        })
     }
 }

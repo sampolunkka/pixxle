@@ -19,7 +19,7 @@ export class ToolManager {
         if (this.activeToolName) {
             this.toolSettings[this.activeToolName] = {
                 size: Number(document.getElementById('tool-size').value),
-                shape: document.getElementById('toolShape').value
+                shape: document.getElementById('tool-shape').value
             };
         }
         this.activeToolName = name;
@@ -27,7 +27,7 @@ export class ToolManager {
         // Restore tool settings for newly active tool
         const { size, shape } = this.toolSettings[name];
         document.getElementById('tool-size').value = size;
-        document.getElementById('toolShape').value = shape;
+        document.getElementById('tool-shape').value = shape;
     }
 
     useActiveTool(layer, x, y, color) {

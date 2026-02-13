@@ -11,6 +11,7 @@ export class Layer {
         this.locked = locked;
         this.visible = true;
         this.zIndex = 0;
+        this.bgColor = fillColor;
 
         // Layer model
         this.model = new LayerModel(width, height, fillColor);
@@ -69,6 +70,10 @@ export class Layer {
 
     clearOverlay() {
         this.overlay.clear();
+    }
+
+    renderInitial() {
+        this.renderer.renderInitial(this.bgColor);
     }
 
     render() {

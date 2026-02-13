@@ -92,7 +92,6 @@ export class ColorPalette {
     addColor(color, append = false, animate = true) {
         this.colors.push(color);
         const swatchElement = this.createColorSwatch(color, animate);
-        console.log(this.colors.length)
         this.animateParentWidthDuring(() => {
             if (append || this.colors.length < 1) {
                 this.paletteElement.appendChild(swatchElement);

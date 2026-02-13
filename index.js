@@ -20,6 +20,8 @@ const toolShape = document.getElementById('tool-shape');
 const layersList = document.getElementById('layers-list');
 const layersPanelElement = document.getElementById('layers-panel');
 const paletteContainer = document.querySelector('.bottom-bar');
+const layersContainer = document.querySelector('.right-bar');
+const toolsContainer = document.querySelector('.top-bar');
 
 const toolButtons = document.querySelectorAll('.button-tool');
 const toolMap = {
@@ -35,6 +37,7 @@ let width = 0;
 let height = 0;
 let workspace = null;
 let preview = null;
+let lastPointer = { x: 0, y: 0 };
 
 let panX = 0, panY = 0;
 let isPanning = false;
@@ -70,6 +73,7 @@ toolShape.addEventListener('change', () => {
 });
 
 toolButtons.forEach(btn => {
+    if (btn.classList.contains('disabled')) return;
     btn.addEventListener('click', () => {
         toolManager.setActiveTool(btn.dataset.tool);
         toolButtons.forEach(b => b.classList.remove('active'));
@@ -77,6 +81,7 @@ toolButtons.forEach(btn => {
     });
 });
 
+// TODO: Remove
 function createLayerListItem(index, layer, isActive) {
     const item = document.createElement('div');
     item.className = 'layer-list-item' +
@@ -172,6 +177,18 @@ function updatePixelGrid() {
 function applyTransform() {
     canvasStack.style.transform = `translate(calc(-50% + ${panX}px), calc(-50% + ${panY}px)) scale(${zoom})`;
     canvasScale.textContent = `Zoom: ${zoom}x`;
+
+    // Update sidebar positions
+    // TODO: Clean up this POC
+    const workspaceWidth = document.body.clientWidth;
+    const centerX = workspaceWidth / 2 + panX;
+    const canvasRight = centerX - (width * zoom) / 2;
+    const layerPanelWidth = layersContainer.offsetWidth;
+    const layerPanelCalculatedX = canvasRight - layerPanelWidth - 20;
+    const layerPanelMinX = 20; // Minimum distance from the left edge
+    const layerPanelFinalX = Math.max(layerPanelCalculatedX, layerPanelMinX);
+    layersContainer.style.right = `${layerPanelFinalX}px`;
+
     updatePixelGrid();
 }
 
@@ -186,8 +203,7 @@ workspaceElement.addEventListener('wheel', (e) => {
     if (!e.ctrlKey && !e.metaKey) {
         e.preventDefault();
         const delta = Math.sign(e.deltaY);
-        let maxZoom = getMaxZoom();
-        zoom = Math.max(1, Math.min(maxZoom, zoom + (delta > 0 ? -1 : 1)));
+        zoom = Math.max(1, zoom + (delta > 0 ? -1 : 1));
         applyTransform();
     }
 }, { passive: false });
@@ -229,10 +245,11 @@ function useTool(workspace, x, y, color, shouldUpdate = true) {
     }
 }
 
+// Use tool
 window.addEventListener('pointerdown', (e) => {
     if (!workspace) return;
+    if (!cursorIsOverWorkspace(e.clientX, e.clientY)) return;
     if (!toolManager) return;
-    if (isInsideCanvas(foregroundCanvas, e.clientX, e.clientY)) {
         isDrawing = true;
         lastDrawX = null;
         lastDrawY = null;
@@ -240,7 +257,6 @@ window.addEventListener('pointerdown', (e) => {
         useTool(workspace, coords.x, coords.y, sixBitHexTo0xColor(colorPalette.getPrimaryColor()));
         lastDrawX = coords.x;
         lastDrawY = coords.y;
-    }
 });
 
 window.addEventListener('pointerup', () => {
@@ -264,13 +280,21 @@ function interpolate(workspace, x0, y0, x1, y1, color) {
     if (preview) preview.renderPreview();
 }
 
+function  cursorIsOverWorkspace(clientX, clientY) {
+    const el = document.elementFromPoint(clientX, clientY);
+    return el && el.closest(".workspace");
+}
+
 window.addEventListener('pointermove', (e) => {
+    lastPointer = { x: e.clientX, y: e.clientY };
     if (!workspace || !toolManager) return;
-    if (!isInsideCanvas(foregroundCanvas, e.clientX, e.clientY)) {
-        lastOverlayX  = null;
-        lastOverlayY  = null;
+    if (!isDrawing && !cursorIsOverWorkspace(e.clientX, e.clientY)) {
+        lastDrawX = null;
+        lastDrawY = null;
+        workspace.clearOverlays();
         return;
     }
+
     const coords = clientPosToCanvasCoords(foregroundCanvas, e.clientX, e.clientY, zoom);
 
     if (isDrawing && (coords.x !== lastDrawX || coords.y !== lastDrawY)) {
@@ -308,14 +332,6 @@ window.addEventListener('pointermove', (e) => {
     }
 });
 
-window.addEventListener('pointerdown', (e) => {
-    if (!workspace) return;
-    if (!toolManager) return;
-    if (isInsideCanvas(foregroundCanvas, e.clientX, e.clientY)) {
-        const coords = clientPosToCanvasCoords(foregroundCanvas, e.clientX, e.clientY, zoom);
-        useTool(workspace, coords.x, coords.y, sixBitHexTo0xColor(colorPalette.getPrimaryColor()));}
-});
-
 setupForm.addEventListener('submit', (e) => {
     e.preventDefault();
 
@@ -328,20 +344,26 @@ setupForm.addEventListener('submit', (e) => {
     if (zoom < 1) zoom = 1;
 
     workspace = new Workspace(width, height, backgroundCanvas, foregroundCanvas, bgColor);
-    workspace.update();
 
+    /* Preview Windows - disabled until new position is decided
     let canvases = canvasStack.children;
 
     preview = createDocumentPreview(canvases);
     preview.renderPreview();
+     */
 
     setupForm.classList.add('hidden');
     canvasStack.classList.remove('hidden');
     grid.classList.remove('hidden');
-    layersPanelElement.classList.remove('hidden');
+    //layersContainer.classList.remove('hidden');
+    paletteContainer.classList.remove('hidden');
+    toolsContainer.classList.remove('hidden');
     renderLayersPanel();
-
     applyTransform();
+
+    // Initial hover
+    const initialCoords = clientPosToCanvasCoords(foregroundCanvas, lastPointer.x, lastPointer.y, zoom);
+    hoverWithTool(workspace, initialCoords.x, initialCoords.y, sixBitHexTo0xColor(colorPalette.getPrimaryColor()));
 });
 
 const colors = [

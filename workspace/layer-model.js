@@ -5,7 +5,7 @@ export class LayerModel {
         this.width = width;
         this.height = height;
         this.pixels = new Uint32Array(width * height);
-        this.dirtyPixels = this.dirtyPixels = new Set(Array.from({length: this.width * this.height}, (_, i) => i));
+        this.dirtyPixels = new Set();
 
         if (fill !== TRANSPARENT_SENTINEL) {
             this.pixels.fill(fill);
@@ -19,7 +19,10 @@ export class LayerModel {
     }
 
     setPixel(x, y, color) {
+        if ((x | y) < 0 || x >= this.width || y >= this.height) return;
+
         const idx = y * this.width + x;
+
         if (this.pixels[idx] !== color) {
             this.pixels[idx] = color;
             this.markDirty(idx);

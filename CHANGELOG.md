@@ -8,4 +8,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- New toolbar design
 - Project structure and initial files
+
+### Fixed
+- First render slowness
+- Draw stopping before canvas edge when going outside the canvas
+- Hover not starting after submit when cursor is on canvas
