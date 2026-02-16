@@ -10,6 +10,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - New toolbar design
 - Project structure and initial files
+- Custom context menu for layers list
+- Checkerboard background for drawing area
+
+### Changed
+- Make workspace, toolManager singletons
+- Make layers list follow canvas edge
 
 ### Fixed
 - First render slowness

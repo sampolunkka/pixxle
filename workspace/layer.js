@@ -12,6 +12,7 @@ export class Layer {
         this.visible = true;
         this.zIndex = 0;
         this.bgColor = fillColor;
+        this.name = '';
 
         // Layer model
         this.model = new LayerModel(width, height, fillColor);
@@ -81,8 +82,8 @@ export class Layer {
     }
 
     clear() {
-        this.model.clear();
-        this.clearOverlay();
+        this.model = new LayerModel(this.width, this.height, this.bgColor);
+        this.renderInitial();
     }
 
     setZIndex(zIndex) {

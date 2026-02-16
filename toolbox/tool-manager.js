@@ -1,15 +1,19 @@
-export class ToolManager {
-    constructor(toolMap) {
-        this.tools = toolMap;
-        this.activeToolName = Object.keys(toolMap)[0];
+class ToolManager {
+    constructor() {
+        this.tools = null;
+    }
+
+    init(toolsMap) {
+        this.tools = toolsMap;
+        this.activeToolName = Object.keys(toolsMap)[0];
         this.toolSettings = {};
 
         // Set tool defaults
-        for (const name of Object.keys(toolMap)) {
+        for (const name of Object.keys(toolsMap)) {
             this.toolSettings[name] = { size: 1, shape: 'square' };
         }
 
-        console.log(`toolManager initialized with tools: ${Object.keys(toolMap).join(', ')}`);
+        console.log(`toolManager initialized with tools: ${Object.keys(toolsMap).join(', ')}`);
     }
 
     setActiveTool(name) {
@@ -56,3 +60,5 @@ export class ToolManager {
         }
     }
 }
+
+export const toolManager = new ToolManager();

@@ -47,19 +47,16 @@
         <label class="label-secondary">Background color
             <input id="background-color-picker" type="color" value="#ffffff">
         </label>
-        <label class="label-secondary"><input id="bgTransparent" type="checkbox"> Transparent</label>
 
         <button id="clear-button">Clear</button>
     </aside>
 </div>
 
 <div class="right-bar hidden">
-    <aside id="layers-panel" class="panel panel-layers" aria-label="Layers panel">
-        <button id="add-layer-button" class="button-layer button-add-item" title="Add layer">
-            +
-        </button>
-        <div id="layers-list" class="panel-layers-list"></div>
-    </aside>
+    <button id="add-layer-button" class="button-layer button-add-item" title="Add layer">
+        +
+    </button>
+    <div id="layers-list" class="panel-layers-list"></div>
 </div>
 
 <main class="workspace" data-pan-enabled data-zoom-enabled>
@@ -82,9 +79,15 @@
     </div>
 
     <div id="pixel-grid" class="pixel-grid hidden"></div>
+    <div id="checkerboard-background" class="checkerboard-background hidden"></div>
+
 </main>
 
 <div class="bottom-bar hidden">
+</div>
+
+<div id="custom-context-menu" class="custom-context-menu hidden" tabindex="0">
+    <!-- Menu items will be populated dynamically -->
 </div>
 
 <script type="module" src="index.js" defer></script>
