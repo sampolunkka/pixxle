@@ -1,6 +1,7 @@
 import {ERASED_SENTINEL, Shape} from "../const.js";
 import {Tool} from "./tool.js";
 import {TRANSPARENT_SENTINEL} from "../const.js";
+import {shapePixels} from "../utils.js";
 
 export class EraserTool extends Tool {
     constructor() {
@@ -17,12 +18,14 @@ export class EraserTool extends Tool {
         this.shape = shape;
     }
 
-    use(layer, x, y, color) {
-        layer.draw(x, y, TRANSPARENT_SENTINEL, this.shape, this.size);
+    use(workspace, x, y, colorPalette) {
+        let layer = workspace.getActiveLayer();
+        const pixels = shapePixels(x, y, TRANSPARENT_SENTINEL, this.shape, this.size)
+        layer.draw(pixels);
     }
 
     drawOverlay(layer, x, y, color) {
-        layer.clearPreviousOverlayBox();
-        layer.drawOverlay(x, y, ERASED_SENTINEL, this.shape, this.size);
+        const pixels = shapePixels(x, y, ERASED_SENTINEL, this.shape, this.size)
+        layer.stage(pixels);
     }
 }

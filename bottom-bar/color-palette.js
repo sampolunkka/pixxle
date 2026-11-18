@@ -1,4 +1,4 @@
-import {makeRandomHex} from "../utils.js";
+import {makeRandomHex, sixBitHexTo0xColor} from "../utils.js";
 
 export class ColorPalette {
     constructor(paletteElement, colors) {
@@ -144,10 +144,21 @@ export class ColorPalette {
     }
 
     getPrimaryColor() {
-        return this.activePrimary ? this.activePrimary.dataset.color : null;
+        return this.activePrimary
+            ? sixBitHexTo0xColor(this.activePrimary.dataset.color)
+            : null;
     }
 
     getSecondaryColor() {
-        return this.activeSecondary ? this.activeSecondary.dataset.color : null;
+        return this.activeSecondary
+            ? sixBitHexTo0xColor(this.activeSecondary.dataset.color)
+            : null;
+    }
+
+    setPrimaryColor(color) {
+        if (this.activePrimary) {
+            this.activePrimary.dataset.color = color;
+            this.activePrimary.style.backgroundColor = color;
+        }
     }
 }

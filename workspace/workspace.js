@@ -62,6 +62,10 @@ class Workspace {
         return this.layers[this.activeLayerIdx];
     }
 
+    getTopLayer() {
+        return this.layers[this.layers.length - 1];
+    }
+
     getCanvasBoundingClientRect() {
         return this.layers[0].canvas.getBoundingClientRect();
     }

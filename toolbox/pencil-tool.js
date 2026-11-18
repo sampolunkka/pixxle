@@ -1,5 +1,6 @@
 import {Shape} from "../const.js";
 import {Tool} from "./tool.js";
+import {shapePixels, sixBitHexTo0xColor} from "../utils.js";
 
 export class PencilTool extends Tool {
     constructor() {
@@ -16,12 +17,23 @@ export class PencilTool extends Tool {
         this.shape = shape;
     }
 
-    use(layer, x, y, color) {
-        layer.draw(x, y, color, this.shape, this.size);
+    use(workspace, x, y, colorPalette) {
+        const layer = workspace.getActiveLayer();
+        const color = colorPalette.getPrimaryColor();
+
+        if (color === null) return;
+
+        const pixels = shapePixels(x, y, color, this.shape, this.size)
+
+        layer.draw(pixels);
     }
 
-    drawOverlay(layer, x, y, color) {
-        layer.clearPreviousOverlayBox();
-        layer.drawOverlay(x, y, color, this.shape, this.size);
+    drawOverlay(layer, x, y, colorPalette) {
+        let color = colorPalette.getPrimaryColor();
+        if (color === null) return;
+
+        const pixels = shapePixels(x, y, color, this.shape, this.size)
+
+        layer.stage(pixels);
     }
 }

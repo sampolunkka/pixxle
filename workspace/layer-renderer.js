@@ -29,9 +29,12 @@ export class LayerRenderer {
             ...this.layer.model.dirtyPixels,
             ...this.layer.overlay.dirtyPixels
         ]);
+
         for (const i of dirty) {
             const x = i % width;
             const y = Math.floor(i / width);
+
+            // Draw staged pixel (overlay) if it exists, otherwise draw committed pixel (model)
             const color = staged[i] !== TRANSPARENT_SENTINEL ? staged[i] : committed[i];
             if (color === TRANSPARENT_SENTINEL || color === ERASED_SENTINEL) {
                 this.ctx.clearRect(x, y, 1, 1);
@@ -40,6 +43,7 @@ export class LayerRenderer {
                 this.ctx.fillRect(x, y, 1, 1);
             }
         }
+
 
         this.layer.model.clearDirty();
         this.layer.overlay.clearDirty();

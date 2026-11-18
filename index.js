@@ -239,13 +239,13 @@ window.addEventListener('pointerup', (e) => {
     document.body.style.cursor = '';
 });
 
-function hoverWithTool(workspace, x, y, color) {
-    toolManager.hoverActiveTool(workspace.getActiveLayer(), x, y, color);
+function hoverWithTool(workspace, x, y, colorPalette) {
+    toolManager.hoverActiveTool(workspace.getActiveLayer(), x, y, colorPalette);
     workspace.update();
 }
 
-function useTool(workspace, x, y, color, shouldUpdate = true) {
-    toolManager.useActiveTool(workspace.getActiveLayer(), x, y, color);
+function useTool(workspace, x, y, colorPalette, shouldUpdate = true) {
+    toolManager.useActiveTool(workspace, x, y, colorPalette);
     if (shouldUpdate) {
         workspace.update();
         if (preview) preview.renderPreview();
@@ -261,7 +261,7 @@ window.addEventListener('pointerdown', (e) => {
     lastDrawX = null;
     lastDrawY = null;
     const coords = clientPosToWorkspaceCoords(workspace, e.clientX, e.clientY, zoom);
-    useTool(workspace, coords.x, coords.y, sixBitHexTo0xColor(colorPalette.getPrimaryColor()));
+    useTool(workspace, coords.x, coords.y, colorPalette);
     lastDrawX = coords.x;
     lastDrawY = coords.y;
 });
@@ -272,12 +272,12 @@ window.addEventListener('pointerup', () => {
     lastDrawY = null;
 });
 
-function interpolate(workspace, x0, y0, x1, y1, color) {
+function interpolate(workspace, x0, y0, x1, y1, colorPalette) {
     let dx = Math.abs(x1 - x0), dy = Math.abs(y1 - y0);
     let sx = x0 < x1 ? 1 : -1, sy = y0 < y1 ? 1 : -1;
     let err = dx - dy;
     while (true) {
-        useTool(workspace, x0, y0, color, false);
+        useTool(workspace, x0, y0, colorPalette, false);
         if (x0 === x1 && y0 === y1) break;
         let e2 = 2 * err;
         if (e2 > -dy) {
@@ -315,11 +315,10 @@ window.addEventListener('pointermove', (e) => {
         if (!drawPending) {
             drawPending = true;
             requestAnimationFrame(() => {
-                let color0x = sixBitHexTo0xColor(colorPalette.getPrimaryColor());
                 if (drawInterpolation && pendingDraw && pendingDraw.x0 !== null && pendingDraw.y0 !== null) {
-                    interpolate(workspace, pendingDraw.x0, pendingDraw.y0, pendingDraw.x1, pendingDraw.y1, color0x);
+                    interpolate(workspace, pendingDraw.x0, pendingDraw.y0, pendingDraw.x1, pendingDraw.y1, colorPalette);
                 } else if (pendingDraw) {
-                    useTool(workspace, pendingDraw.x1, pendingDraw.y1, color0x);
+                    useTool(workspace, pendingDraw.x1, pendingDraw.y1, colorPalette);
                 }
                 lastDrawX = pendingDraw.x1;
                 lastDrawY = pendingDraw.y1;
@@ -336,7 +335,7 @@ window.addEventListener('pointermove', (e) => {
                 overlayRenderPending = true;
                 requestAnimationFrame(() => {
                     if (latestOverlayCoords) {
-                        hoverWithTool(workspace, latestOverlayCoords.x, latestOverlayCoords.y, sixBitHexTo0xColor(colorPalette.getPrimaryColor()));
+                        hoverWithTool(workspace, latestOverlayCoords.x, latestOverlayCoords.y, colorPalette);
                     }
                     overlayRenderPending = false;
                 });

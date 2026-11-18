@@ -34,12 +34,12 @@ class ToolManager {
         document.getElementById('tool-shape').value = shape;
     }
 
-    useActiveTool(layer, x, y, color) {
-        this.getActiveTool().use(layer, x, y, color);
+    useActiveTool(workspace, x, y, colorPalette) {
+        this.getActiveTool().use(workspace, x, y, colorPalette);
     }
 
-    hoverActiveTool(layer, x, y, color) {
-        this.getActiveTool().drawOverlay(layer, x, y, color);
+    hoverActiveTool(layer, x, y, colorPalette) {
+        this.getActiveTool().drawOverlay(layer, x, y, colorPalette);
     }
 
     setActiveToolSize(size) {
@@ -52,12 +52,6 @@ class ToolManager {
 
     getActiveTool() {
         return this.tools[this.activeToolName];
-    }
-
-    handleEvent(event) {
-        if (this.activeTool && this.activeTool.handleEvent) {
-            this.activeTool.handleEvent(event);
-        }
     }
 }
 
