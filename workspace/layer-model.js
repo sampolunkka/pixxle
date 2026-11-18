@@ -5,7 +5,7 @@ export class LayerModel {
         this.width = width;
         this.height = height;
         this.pixels = new Uint32Array(width * height);
-        this.dirtyPixels = this.dirtyPixels = new Set(Array.from({length: this.width * this.height}, (_, i) => i));
+        this.dirtyPixels = new Set();
 
         if (fill !== TRANSPARENT_SENTINEL) {
             this.pixels.fill(fill);
@@ -18,48 +18,21 @@ export class LayerModel {
         this.dirtyPixels.add(idx);
     }
 
+    setPixels(pixels) {
+        for (let i = 0; i < pixels.length; i++) {
+            this.setPixel(pixels[i].x, pixels[i].y, pixels[i].color);
+        }
+    }
+
     setPixel(x, y, color) {
+        // Check bounds
+        if ((x || y) < 0 || x >= this.width || y >= this.height) return;
+
         const idx = y * this.width + x;
+
         if (this.pixels[idx] !== color) {
             this.pixels[idx] = color;
             this.markDirty(idx);
-        }
-    }
-
-    setCircle(x, y, size, color) {
-        const radius = Math.floor(size / 2);
-        const r2 = radius * radius;
-        for (let dy = -radius; dy <= radius; dy++) {
-            const py = y + dy;
-            if (py < 0 || py >= this.height) continue;
-            const dxLimit = Math.floor(Math.sqrt(r2 - dy * dy));
-            const startX = Math.max(0, x - dxLimit);
-            const endX = Math.min(this.width - 1, x + dxLimit);
-            for (let px = startX; px <= endX; px++) {
-                const idx = py * this.width + px;
-                if (this.pixels[idx] !== color) {
-                    this.pixels[idx] = color;
-                    this.markDirty(idx);
-                }
-            }
-        }
-    }
-
-    setSquare(x, y, size, color) {
-        const half = Math.floor(size / 2);
-        const startY = Math.max(0, y - half);
-        const endY = Math.min(this.height - 1, y + half);
-        const startX = Math.max(0, x - half);
-        const endX = Math.min(this.width - 1, x + half);
-
-        for (let py = startY; py <= endY; py++) {
-            for (let px = startX; px <= endX; px++) {
-                const idx = py * this.width + px;
-                if (this.pixels[idx] !== color) {
-                    this.pixels[idx] = color;
-                    this.markDirty(idx);
-                }
-            }
         }
     }
 

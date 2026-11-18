@@ -7,8 +7,32 @@
 </head>
 <body>
 
-<div class="panel options-bar">
-    <div class="options-bar-left">
+<div class="top-bar hidden">
+    <button class="button-tool active" data-tool="pencil" title="Pencil">
+        <img src="assets/pencil.svg" alt="Pencil" width="32" height="32">
+    </button>
+    <button class="button-tool" data-tool="eraser" title="Eraser">
+        <img src="assets/eraser.svg" alt="Eraser" width="32" height="32">
+    </button>
+    <button class="button-tool disabled" data-tool="line" title="Line">
+        <img src="assets/line.svg" alt="Line" width="32" height="32">
+    </button>
+    <button class="button-tool disabled" data-tool="rectangle" title="Rectangle">
+        <img src="assets/rectangle.svg" alt="Rectangle" width="28" height="28">
+    </button>
+    <button class="button-tool disabled" data-tool="circle" title="Circle">
+        <img src="assets/circle.svg" alt="Circle" width="32" height="32">
+    </button>
+    <button class="button-tool disabled" data-tool="selection" title="Selection">
+        <img src="assets/selection.svg" alt="Selection" width="32" height="32">
+    </button>
+    <button class="button-tool disabled" data-tool="eyedropper" title="Eyedropper">
+        <img src="assets/eyedropper.svg" alt="Eyedropper" width="32" height="32">
+    </button>
+</div>
+
+<div class="left-bar hidden">
+    <aside id="document-settings" class="panel panel-document-settings" aria-label="Document settings">
         <label class="tool-label">Size
             <input id="tool-size" type="range" min="1" max="16" value="1" style="width: 80px;">
         </label>
@@ -18,71 +42,34 @@
                 <option value="circle">Circle</option>
             </select>
         </label>
-    </div>
-
-    <div class="options-bar-center">
         <span id="canvas-size" class="doc-item">Canvas: — × —</span>
         <span class="doc-item">Zoom: <span id="canvas-scale">1x</span></span>
-    </div>
-
-    <div class="options-bar-right">
         <label class="label-secondary">Background color
             <input id="background-color-picker" type="color" value="#ffffff">
         </label>
-        <label class="label-secondary"><input id="bgTransparent" type="checkbox"> Transparent</label>
 
         <button id="clear-button">Clear</button>
-    </div>
+    </aside>
 </div>
 
-<div class="dock-left">
-    <aside id="tools" class="panel panel-tools" aria-label="Tools">
-        <label class="label-primary">Tools</label>
-        <button class="button-tool active" data-tool="pencil" title="Pencil">
-            <img class="icon-tool" src="assets/pencil.svg" alt="Pencil" width="20" height="20">
-            Pencil
-        </button>
-        <button class="button-tool" data-tool="eraser" title="Eraser">
-            <img class="icon-tool" src="assets/eraser.svg" alt="Eraser" width="20" height="20">
-            Eraser
-        </button>
-    </aside>
-
-    <div id="panel-color-selection" class="panel panel-color" aria-label="Color">
-        <div class="panel-color">
-            <label>Color <input id="color-picker" type="color" value="#000000"></label>
-        </div>
-    </div>
-</div>
-
-<div class="dock-right">
-    <aside class="panel panel-preview" aria-label="Preview">
-        <div class="preview-viewport">
-            <canvas id="canvasPreview" class="canvas-preview" aria-label="Pixel preview"></canvas>
-        </div>
-        <div class="panel-row">
-            <label class="label-secondary">Scale
-                <input id="preview-scale-input" type="range" min="1" max="8" value="1">
-            </label>
-        </div>
-    </aside>
-    <aside id="layers-panel" class="panel panel-layers hidden" aria-label="Layers panel">
-        <button id="add-layer-button" class="button-layer button-add-layer" title="Add layer">
-            +
-        </button>
-        <div id="layers-list" class="panel-layers-list"></div>
-    </aside>
+<div class="right-bar hidden">
+    <div id="layers-list" class="panel-layers-list"></div>
+    <button id="add-layer-button" class="button-layer button-add-item" title="Add layer">
+        +
+    </button>
 </div>
 
 <main class="workspace" data-pan-enabled data-zoom-enabled>
 
     <form id="setup" class="modal-document-setup" aria-label="Document setup">
         <div class="modal-workspace-setup-row">
-            <label>Width <input id="width" name="width" type="number" min="1" max="1280" value="32"></label>
-            <label>Height <input id="height" name="height" type="number" min="1" max="1280" value="32"></label>
+            <label class="label-secondary">Width <input id="width" name="width" type="number" min="1" max="1280"
+                                                        value="32"></label>
+            <label class="label-secondary">Height <input id="height" name="height" type="number" min="1" max="1280"
+                                                         value="32"></label>
         </div>
-        <div class="create-actions">
-            <button type="submit">Create</button>
+        <div class="modal-workspace-setup-row">
+            <button class="button-primary" type="submit">Create</button>
         </div>
     </form>
 
@@ -92,12 +79,15 @@
     </div>
 
     <div id="pixel-grid" class="pixel-grid hidden"></div>
+    <div id="checkerboard-background" class="checkerboard-background hidden"></div>
+
 </main>
 
-<div id="bottomBar" class="bottom-bar" role="status" aria-live="polite">
-    <div class="bottom-bar-inner">
-        <span id="coords-display" class="coords">x:0 y:0</span>
-    </div>
+<div class="bottom-bar hidden">
+</div>
+
+<div id="custom-context-menu" class="custom-context-menu hidden" tabindex="0">
+    <!-- Menu items will be populated dynamically -->
 </div>
 
 <script type="module" src="index.js" defer></script>

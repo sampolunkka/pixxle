@@ -47,5 +47,5 @@ export function createDocumentPreview(canvases) {
         });
     }
 
-    return { updatecanvasPreviewSize: updatePreviewCanvasSize, renderPreview };
+    return { renderPreview };
 }

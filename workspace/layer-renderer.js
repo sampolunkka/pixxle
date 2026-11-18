@@ -6,12 +6,20 @@ export class LayerRenderer {
     constructor(layer, canvasElement) {
         this.layer = layer;
         this.canvas = canvasElement;
+        this.ctx = this.canvas.getContext('2d');
+        this.ctx.imageSmoothingEnabled = false;
+    }
+
+    renderInitial(color = TRANSPARENT_SENTINEL) {
+        if (color === TRANSPARENT_SENTINEL) {
+            this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        } else {
+            this.ctx.fillStyle = intToSixBitHex(color);
+            this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+        }
     }
 
     render() {
-        const ctx = this.canvas.getContext('2d');
-        ctx.imageSmoothingEnabled = false;
-
         const width = this.layer.width;
         const committed = this.layer.model.pixels;
         const staged = this.layer.overlay.pixels;
@@ -21,17 +29,21 @@ export class LayerRenderer {
             ...this.layer.model.dirtyPixels,
             ...this.layer.overlay.dirtyPixels
         ]);
+
         for (const i of dirty) {
             const x = i % width;
             const y = Math.floor(i / width);
+
+            // Draw staged pixel (overlay) if it exists, otherwise draw committed pixel (model)
             const color = staged[i] !== TRANSPARENT_SENTINEL ? staged[i] : committed[i];
             if (color === TRANSPARENT_SENTINEL || color === ERASED_SENTINEL) {
-                ctx.clearRect(x, y, 1, 1);
+                this.ctx.clearRect(x, y, 1, 1);
             } else {
-                ctx.fillStyle = intToSixBitHex(color);
-                ctx.fillRect(x, y, 1, 1);
+                this.ctx.fillStyle = intToSixBitHex(color);
+                this.ctx.fillRect(x, y, 1, 1);
             }
         }
+
 
         this.layer.model.clearDirty();
         this.layer.overlay.clearDirty();

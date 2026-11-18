@@ -1,15 +1,19 @@
-export class ToolManager {
-    constructor(toolMap) {
-        this.tools = toolMap;
-        this.activeToolName = Object.keys(toolMap)[0];
+class ToolManager {
+    constructor() {
+        this.tools = null;
+    }
+
+    init(toolsMap) {
+        this.tools = toolsMap;
+        this.activeToolName = Object.keys(toolsMap)[0];
         this.toolSettings = {};
 
         // Set tool defaults
-        for (const name of Object.keys(toolMap)) {
+        for (const name of Object.keys(toolsMap)) {
             this.toolSettings[name] = { size: 1, shape: 'square' };
         }
 
-        console.log(`toolManager initialized with tools: ${Object.keys(toolMap).join(', ')}`);
+        console.log(`toolManager initialized with tools: ${Object.keys(toolsMap).join(', ')}`);
     }
 
     setActiveTool(name) {
@@ -19,7 +23,7 @@ export class ToolManager {
         if (this.activeToolName) {
             this.toolSettings[this.activeToolName] = {
                 size: Number(document.getElementById('tool-size').value),
-                shape: document.getElementById('toolShape').value
+                shape: document.getElementById('tool-shape').value
             };
         }
         this.activeToolName = name;
@@ -27,15 +31,15 @@ export class ToolManager {
         // Restore tool settings for newly active tool
         const { size, shape } = this.toolSettings[name];
         document.getElementById('tool-size').value = size;
-        document.getElementById('toolShape').value = shape;
+        document.getElementById('tool-shape').value = shape;
     }
 
-    useActiveTool(layer, x, y, color) {
-        this.getActiveTool().use(layer, x, y, color);
+    useActiveTool(workspace, x, y, colorPalette) {
+        this.getActiveTool().use(workspace, x, y, colorPalette);
     }
 
-    hoverActiveTool(layer, x, y, color) {
-        this.getActiveTool().drawOverlay(layer, x, y, color);
+    hoverActiveTool(layer, x, y, colorPalette) {
+        this.getActiveTool().drawOverlay(layer, x, y, colorPalette);
     }
 
     setActiveToolSize(size) {
@@ -49,10 +53,6 @@ export class ToolManager {
     getActiveTool() {
         return this.tools[this.activeToolName];
     }
-
-    handleEvent(event) {
-        if (this.activeTool && this.activeTool.handleEvent) {
-            this.activeTool.handleEvent(event);
-        }
-    }
 }
+
+export const toolManager = new ToolManager();
