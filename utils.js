@@ -17,8 +17,9 @@ export function clientPosToCanvasCoords(canvas, clientX, clientY, zoom) {
     return { x, y };
 }
 
-export function clientPosToWorkspaceCoords(workspace, clientX, clientY, zoom) {
+export function clientPosToWorkspaceCoords(workspace, clientX, clientY) {
     const rect = workspace.getCanvasBoundingClientRect();
+    const zoom = workspace.getZoom();
     const x = Math.floor((clientX - rect.left) / zoom);
     const y = Math.floor((clientY - rect.top) / zoom);
     return { x, y };
@@ -76,5 +77,33 @@ export function shapePixels(cx, cy, color, shape, size) {
         case Shape.CIRCLE: return circlePixels(cx, cy, color, size);
         case Shape.SQUARE: return squarePixels(cx, cy, color, size);
         default:           return [{x: cx, y: cy, color}];
+    }
+}
+
+export function* interpolatePositions(x0, y0, x1, y1) {
+    const dx = Math.abs(x1 - x0);
+    const dy = Math.abs(y1 - y0);
+
+    const sx = x0 < x1 ? 1 : -1;
+    const sy = y0 < y1 ? 1 : -1;
+
+    let error = dx - dy;
+
+    while (true) {
+        yield { x: x0, y: y0 };
+
+        if (x0 === x1 && y0 === y1) break;
+
+        const e2 = 2 * error;
+
+        if (e2 > -dy) {
+            error -= dy;
+            x0 += sx;
+        }
+
+        if (e2 < dx) {
+            error += dx;
+            y0 += sy;
+        }
     }
 }

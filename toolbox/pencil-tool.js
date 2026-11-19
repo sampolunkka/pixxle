@@ -7,6 +7,8 @@ export class PencilTool extends Tool {
         super('Pencil');
         this.shape = Shape.SQUARE;
         this.size = 1;
+
+        this.drawing = false;
     }
 
     getShape() {
@@ -17,23 +19,32 @@ export class PencilTool extends Tool {
         this.shape = shape;
     }
 
-    use(workspace, x, y, colorPalette) {
-        const layer = workspace.getActiveLayer();
+    onPointerDown(workspace, x, y, colorPalette) {
+        this.drawing = true
         const color = colorPalette.getPrimaryColor();
-
         if (color === null) return;
 
-        const pixels = shapePixels(x, y, color, this.shape, this.size)
+        const layer = workspace.getActiveLayer();
 
+        const pixels = shapePixels(x, y, color, this.shape, this.size)
         layer.draw(pixels);
     }
 
-    drawOverlay(layer, x, y, colorPalette) {
+    onPointerMove(workspace, x, y, colorPalette) {
         let color = colorPalette.getPrimaryColor();
         if (color === null) return;
 
+        const layer = workspace.getActiveLayer();
         const pixels = shapePixels(x, y, color, this.shape, this.size)
 
-        layer.stage(pixels);
+        if (this.drawing) {
+            layer.draw(pixels);
+        } else {
+            layer.stage(pixels);
+        }
+    }
+
+    onPointerUp(workspace, x, y, colorPalette) {
+        this.drawing = false;
     }
 }

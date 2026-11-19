@@ -1,5 +1,10 @@
-class ToolManager {
-    constructor() {
+import {clientPosToWorkspaceCoords} from "../utils.js";
+
+export default class ToolManager {
+    constructor(workspace, colorPalette) {
+        this.workspace = workspace;
+        this.colorPalette = colorPalette;
+
         this.tools = null;
     }
 
@@ -34,12 +39,22 @@ class ToolManager {
         document.getElementById('tool-shape').value = shape;
     }
 
-    useActiveTool(workspace, x, y, colorPalette) {
-        this.getActiveTool().use(workspace, x, y, colorPalette);
+    onPointerDown(e) {
+        const coords = clientPosToWorkspaceCoords(this.workspace, e.clientX, e.clientY);
+        this.getActiveTool().onPointerDown(this.workspace, coords.x, coords.y, this.colorPalette);
+        this.workspace.update();
     }
 
-    hoverActiveTool(layer, x, y, colorPalette) {
-        this.getActiveTool().drawOverlay(layer, x, y, colorPalette);
+    onPointerMove(e) {
+        const coords = clientPosToWorkspaceCoords(this.workspace, e.clientX, e.clientY);
+        this.getActiveTool().onPointerMove(this.workspace, coords.x, coords.y, this.colorPalette);
+        this.workspace.update();
+    }
+
+    onPointerUp(e) {
+        const coords = clientPosToWorkspaceCoords(this.workspace, e.clientX, e.clientY);
+        this.getActiveTool().onPointerUp(this.workspace, coords.x, coords.y, this.colorPalette);
+        this.workspace.update();
     }
 
     setActiveToolSize(size) {
@@ -54,5 +69,3 @@ class ToolManager {
         return this.tools[this.activeToolName];
     }
 }
-
-export const toolManager = new ToolManager();

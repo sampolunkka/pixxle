@@ -18,13 +18,14 @@ export class EraserTool extends Tool {
         this.shape = shape;
     }
 
-    use(workspace, x, y, colorPalette) {
-        let layer = workspace.getActiveLayer();
+    onPointerDown(workspace, x, y, colorPalette) {
+        const layer = workspace.getActiveLayer();
         const pixels = shapePixels(x, y, TRANSPARENT_SENTINEL, this.shape, this.size)
         layer.draw(pixels);
     }
 
-    drawOverlay(layer, x, y, color) {
+    drawOverlay(workspace, x, y, colorPalette) {
+        const layer = workspace.getActiveLayer();
         const pixels = shapePixels(x, y, ERASED_SENTINEL, this.shape, this.size)
         layer.stage(pixels);
     }

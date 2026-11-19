@@ -5,7 +5,7 @@ export class EyedropperTool extends Tool {
         super('Eyedropper');
     }
 
-    use(workspace, x, y, colorPalette) {
+    onPointerDown(workspace, x, y, colorPalette) {
         let layer = workspace.getTopLayer();
         let color = layer.getPixel(x, y);
 

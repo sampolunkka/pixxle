@@ -3,9 +3,10 @@ import {clientPosToCanvasCoords, clientPosToWorkspaceCoords, isInsideCanvas, six
 import {createDocumentPreview} from "./preview-window.js";
 import {contextMenu} from "./context-menu/custom-context-menu.js";
 import {PencilTool} from "./toolbox/pencil-tool.js";
-import {toolManager} from "./toolbox/tool-manager.js";
+import ToolManager from "./toolbox/tool-manager.js";
 import {EraserTool} from "./toolbox/eraser-tool.js";
 import {ColorPalette} from "./bottom-bar/color-palette.js";
+import {InputController} from "./controller/input-controller.js";
 
 const setupForm = document.getElementById('setup');
 const foregroundCanvas = document.getElementById('foreground-canvas');
@@ -25,11 +26,6 @@ const checkerboard = document.getElementById('checkerboard-background');
 const contextMenuElement = document.getElementById('custom-context-menu');
 
 const toolButtons = document.querySelectorAll('.button-tool');
-const toolsMap = {
-    pencil: new PencilTool(),
-    eraser: new EraserTool()/*,
-    eyedropper: new EyedropperTool()*/
-};
 
 let bgColor = sixBitHexTo0xColor(bgColorElement.value);
 let zoom = 1;
@@ -44,23 +40,29 @@ let isPanning = false;
 let startX = 0, startY = 0;
 let baseX = 0, baseY = 0;
 
-// Draw interpolation state
-const drawInterpolation = true;
-let isDrawing = false;
-let lastDrawX = null;
-let lastDrawY = null;
 
-// Overlay optimization - only re-render when coords change
-let lastOverlayX = null;
-let lastOverlayY = null;
+const toolsMap = {
+    pencil: new PencilTool(),
+    eraser: new EraserTool()/*,
+    eyedropper: new EyedropperTool()*/
+};
 
-// Draw optimization (coelesced to animation frame)
-let drawPending = false;
-let pendingDraw = null;
+const colors = [
+    "#ffa502", // warm amber
+    "#ff6b6b", // coral red
+    "#ff9ff3", // soft pink
+    "#48dbfb", // sky blue
+    "#1dd1a1", // mint green
+    "#10ac84", // teal
+    "#54a0ff", // bright blue
+    "#5f27cd", // royal purple
+    "#222f3e", // deep navy
+    "#c8d6e5", // light gray-blue
+];
 
-// Overlay optimization (coelesced to animation frame)
-let latestOverlayCoords = null;
-let overlayRenderPending = false;
+const colorPalette = new ColorPalette(paletteContainer, colors);
+const toolManager = new ToolManager(workspace, colorPalette);
+const inputController = new InputController(toolManager);
 
 toolSize.addEventListener('input', () => {
     if (!toolManager) return;
@@ -212,137 +214,9 @@ workspaceElement.addEventListener('wheel', (e) => {
 
         applyTransform();
         contextMenu.updatePosition();
+        workspace.setZoom(zoom);
     }
 }, {passive: false});
-
-canvasStack.addEventListener('pointerdown', (e) => {
-    if (e.button !== 1) return;
-    e.preventDefault();
-    isPanning = true;
-    startX = e.clientX;
-    startY = e.clientY;
-    baseX = panX;
-    baseY = panY;
-    document.body.style.cursor = 'grabbing';
-});
-
-window.addEventListener('pointermove', (e) => {
-    if (!isPanning) return;
-    panX = baseX + (e.clientX - startX);
-    panY = baseY + (e.clientY - startY);
-    applyTransform();
-});
-
-window.addEventListener('pointerup', (e) => {
-    if (!isPanning) return;
-    isPanning = false;
-    document.body.style.cursor = '';
-});
-
-function hoverWithTool(workspace, x, y, colorPalette) {
-    toolManager.hoverActiveTool(workspace.getActiveLayer(), x, y, colorPalette);
-    workspace.update();
-}
-
-function useTool(workspace, x, y, colorPalette, shouldUpdate = true) {
-    toolManager.useActiveTool(workspace, x, y, colorPalette);
-    if (shouldUpdate) {
-        workspace.update();
-        if (preview) preview.renderPreview();
-    }
-}
-
-// Use tool
-window.addEventListener('pointerdown', (e) => {
-    if (!workspace.width) return;
-    if (!cursorIsOverWorkspace(e.clientX, e.clientY)) return;
-    if (!toolManager) return;
-    isDrawing = true;
-    lastDrawX = null;
-    lastDrawY = null;
-    const coords = clientPosToWorkspaceCoords(workspace, e.clientX, e.clientY, zoom);
-    useTool(workspace, coords.x, coords.y, colorPalette);
-    lastDrawX = coords.x;
-    lastDrawY = coords.y;
-});
-
-window.addEventListener('pointerup', () => {
-    isDrawing = false;
-    lastDrawX = null;
-    lastDrawY = null;
-});
-
-function interpolate(workspace, x0, y0, x1, y1, colorPalette) {
-    let dx = Math.abs(x1 - x0), dy = Math.abs(y1 - y0);
-    let sx = x0 < x1 ? 1 : -1, sy = y0 < y1 ? 1 : -1;
-    let err = dx - dy;
-    while (true) {
-        useTool(workspace, x0, y0, colorPalette, false);
-        if (x0 === x1 && y0 === y1) break;
-        let e2 = 2 * err;
-        if (e2 > -dy) {
-            err -= dy;
-            x0 += sx;
-        }
-        if (e2 < dx) {
-            err += dx;
-            y0 += sy;
-        }
-    }
-    workspace.update();
-    if (preview) preview.renderPreview();
-}
-
-function cursorIsOverWorkspace(clientX, clientY) {
-    const el = document.elementFromPoint(clientX, clientY);
-    return el && el.closest(".workspace");
-}
-
-window.addEventListener('pointermove', (e) => {
-    lastPointer = {x: e.clientX, y: e.clientY};
-    if (!workspace.width || !toolManager) return;
-    if (!isDrawing && !cursorIsOverWorkspace(e.clientX, e.clientY)) {
-        lastDrawX = null;
-        lastDrawY = null;
-        workspace.clearOverlays();
-        return;
-    }
-
-    const coords = clientPosToWorkspaceCoords(workspace, e.clientX, e.clientY, zoom);
-
-    if (isDrawing && (coords.x !== lastDrawX || coords.y !== lastDrawY)) {
-        pendingDraw = {x0: lastDrawX, y0: lastDrawY, x1: coords.x, y1: coords.y};
-        if (!drawPending) {
-            drawPending = true;
-            requestAnimationFrame(() => {
-                if (drawInterpolation && pendingDraw && pendingDraw.x0 !== null && pendingDraw.y0 !== null) {
-                    interpolate(workspace, pendingDraw.x0, pendingDraw.y0, pendingDraw.x1, pendingDraw.y1, colorPalette);
-                } else if (pendingDraw) {
-                    useTool(workspace, pendingDraw.x1, pendingDraw.y1, colorPalette);
-                }
-                lastDrawX = pendingDraw.x1;
-                lastDrawY = pendingDraw.y1;
-                drawPending = false;
-                pendingDraw = null;
-            });
-        }
-    } else {
-        if (coords.x !== lastOverlayX || coords.y !== lastOverlayY) {
-            latestOverlayCoords = coords;
-            lastOverlayX = coords.x;
-            lastOverlayY = coords.y;
-            if (!overlayRenderPending) {
-                overlayRenderPending = true;
-                requestAnimationFrame(() => {
-                    if (latestOverlayCoords) {
-                        hoverWithTool(workspace, latestOverlayCoords.x, latestOverlayCoords.y, colorPalette);
-                    }
-                    overlayRenderPending = false;
-                });
-            }
-        }
-    }
-});
 
 layersList.addEventListener('contextmenu', (e) => {
     const item = e.target.closest('.button-layer');
@@ -363,6 +237,15 @@ layersList.addEventListener('contextmenu', (e) => {
 
 });
 
+// Hack: Track the pointer position before the form is submitted, so we can initialize the tool preview at the correct position
+let clientX = 0;
+let clientY = 0;
+function trackPointer(e) {
+    clientX = e.clientX;
+    clientY = e.clientY;
+}
+window.addEventListener('pointermove', trackPointer);
+
 setupForm.addEventListener('submit', (e) => {
     e.preventDefault();
 
@@ -373,8 +256,11 @@ setupForm.addEventListener('submit', (e) => {
     if (zoom < 1) zoom = 1;
 
     workspace.init(width, height, [foregroundCanvas], bgColor);
+    workspace.zoom = zoom;
+
     toolManager.init(toolsMap);
     contextMenu.init(contextMenuElement);
+    inputController.init();
 
     /* Preview Windows - disabled until new position is decided
     let canvases = canvasStack.children;
@@ -393,26 +279,7 @@ setupForm.addEventListener('submit', (e) => {
     renderLayersPanel();
     applyTransform();
 
-    // Initial hover
-    const initialCoords = clientPosToWorkspaceCoords(workspace, lastPointer.x, lastPointer.y, zoom);
-    hoverWithTool(workspace, initialCoords.x, initialCoords.y, sixBitHexTo0xColor(colorPalette.getPrimaryColor()));
+    // Hack: Trigger a pointer move event to initialize the tool preview at the current pointer position
+    toolManager.onPointerMove({ clientX, clientY });
+    window.removeEventListener('pointermove', trackPointer);
 });
-
-const colors = [
-    "#ffa502", // warm amber
-    "#ff6b6b", // coral red
-    "#ff9ff3", // soft pink
-    "#48dbfb", // sky blue
-    "#1dd1a1", // mint green
-    "#10ac84", // teal
-    "#54a0ff", // bright blue
-    "#5f27cd", // royal purple
-    "#222f3e", // deep navy
-    "#c8d6e5", // light gray-blue
-];
-
-const colorPalette = new ColorPalette(paletteContainer, colors);
-
-function init() {
-
-}

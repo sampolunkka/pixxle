@@ -5,12 +5,14 @@ class Workspace {
     constructor() {
         this.width = null;
         this.height = null;
+        this.zoom = 1;
         this.layers = [];
     }
 
-    init(width, height, canvasElements) {
+    init(width, height, canvasElements, zoom) {
         this.width = width;
         this.height = height;
+        this.zoom = zoom;
 
         canvasElements.forEach((canvasElement, index) => {
             const layer = this.addLayer(canvasElement);
@@ -82,6 +84,22 @@ class Workspace {
             layer.clearPreviousOverlayBox();
             layer.render();
         })
+    }
+
+    setZoom(zoom) {
+        this.zoom = zoom;
+    }
+
+    getZoom() {
+        return this.zoom;
+    }
+
+    clientCoordsToWorkspaceCoords(clientX, clientY) {
+        const rect = this.getCanvasBoundingClientRect();
+        const zoom = this.zoom;
+        const x = Math.floor((clientX - rect.left) / zoom);
+        const y = Math.floor((clientY - rect.top) / zoom);
+        return { x, y };
     }
 }
 
