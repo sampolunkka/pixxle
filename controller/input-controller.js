@@ -26,4 +26,7 @@ export class InputController extends EventTarget {
     onPointerUp(e) {
         this.toolManager.onPointerUp(e);
     }
+
+    // TODO: Add window panning and zooming support
+    // TODO: Add context menu support
 }

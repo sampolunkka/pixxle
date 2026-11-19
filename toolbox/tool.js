@@ -6,17 +6,16 @@ export class Tool {
         this.lastPosition = null;
     }
 
-    // Called when the tool is used (e.g., mouse click)
-    // TODO: Consider passing "context" or "event" instead of x, y, colorPalette for more flexibility
     onPointerDown(workspace, x, y, colorPalette) {
         throw new Error('onPointerDown() must be implemented by subclass');
     }
 
-    // TODO: DEPRECATED
-    // Called to render the overlay (e.g., on hover)
-    // TODO: Consider passing "context" or "event" instead of x, y, colorPalette for more flexibility
-    drawOverlay(workspace, x, y, colorPalette) {
-        throw new Error('drawOverlay() must be implemented by subclass');
+    onPointerMove(workspace, x, y, colorPalette) {
+        throw new Error('onPointerMove() must be implemented by subclass');
+    }
+
+    onPointerUp(workspace, x, y, colorPalette) {
+        throw new Error('onPointerUp() must be implemented by subclass');
     }
 
     interpolateTo(x, y, callback) {

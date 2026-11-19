@@ -20,31 +20,36 @@ export class PencilTool extends Tool {
     }
 
     onPointerDown(workspace, x, y, colorPalette) {
-        this.drawing = true
+        this.drawing = true;
+        this.resetInterpolation();
+        this.drawInterpolated(workspace, x, y, colorPalette);
+    }
+
+    onPointerMove(workspace, x, y, colorPalette) {
+        const color = colorPalette.getPrimaryColor();
+        if (color === null) return;
+
+        if (this.drawing) {
+            this.drawInterpolated(workspace, x, y, colorPalette);
+        } else {
+            const layer = workspace.getActiveLayer();
+            layer.stage(shapePixels(x, y, color, this.shape, this.size));
+        }
+    }
+
+    onPointerUp() {
+        this.drawing = false;
+        this.resetInterpolation();
+    }
+
+    drawInterpolated(workspace, x, y, colorPalette) {
         const color = colorPalette.getPrimaryColor();
         if (color === null) return;
 
         const layer = workspace.getActiveLayer();
 
-        const pixels = shapePixels(x, y, color, this.shape, this.size)
-        layer.draw(pixels);
-    }
-
-    onPointerMove(workspace, x, y, colorPalette) {
-        let color = colorPalette.getPrimaryColor();
-        if (color === null) return;
-
-        const layer = workspace.getActiveLayer();
-        const pixels = shapePixels(x, y, color, this.shape, this.size)
-
-        if (this.drawing) {
-            layer.draw(pixels);
-        } else {
-            layer.stage(pixels);
-        }
-    }
-
-    onPointerUp(workspace, x, y, colorPalette) {
-        this.drawing = false;
+        this.interpolateTo(x, y, (px, py) => {
+            layer.draw(shapePixels(px, py, color, this.shape, this.size));
+        });
     }
 }

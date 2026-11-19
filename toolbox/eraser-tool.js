@@ -19,14 +19,36 @@ export class EraserTool extends Tool {
     }
 
     onPointerDown(workspace, x, y, colorPalette) {
-        const layer = workspace.getActiveLayer();
-        const pixels = shapePixels(x, y, TRANSPARENT_SENTINEL, this.shape, this.size)
-        layer.draw(pixels);
+        this.drawing = true;
+        this.resetInterpolation();
+        this.drawInterpolated(workspace, x, y, colorPalette);
     }
 
-    drawOverlay(workspace, x, y, colorPalette) {
+    onPointerMove(workspace, x, y, colorPalette) {
+        const color = colorPalette.getPrimaryColor();
+        if (color === null) return;
+
+        if (this.drawing) {
+            this.drawInterpolated(workspace, x, y, colorPalette);
+        } else {
+            const layer = workspace.getActiveLayer();
+            layer.stage(shapePixels(x, y, ERASED_SENTINEL, this.shape, this.size));
+        }
+    }
+
+    onPointerUp() {
+        this.drawing = false;
+        this.resetInterpolation();
+    }
+
+    drawInterpolated(workspace, x, y, colorPalette) {
+        const color = TRANSPARENT_SENTINEL;
+        if (color === null) return;
+
         const layer = workspace.getActiveLayer();
-        const pixels = shapePixels(x, y, ERASED_SENTINEL, this.shape, this.size)
-        layer.stage(pixels);
+
+        this.interpolateTo(x, y, (px, py) => {
+            layer.draw(shapePixels(px, py, color, this.shape, this.size));
+        });
     }
 }
