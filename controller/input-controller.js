@@ -20,22 +20,26 @@ export class InputController extends EventTarget {
     }
 
     onPointerDown(e) {
-        this.toolManager.onPointerDown(e, this.#getGridCoords(e));
+        if (e.button === 1) { this.viewport.onPointerDown(e); return; }
+        if (e.button === 0) { this.toolManager.onPointerDown(e, this.#getGridCoords(e)); }
     }
 
     onPointerMove(e) {
+        this.viewport.onPointerMove(e);
         this.toolManager.onPointerMove(e, this.#getGridCoords(e));
     }
 
     onPointerUp(e) {
-        this.toolManager.onPointerUp(e, this.#getGridCoords(e));
+
+        if (e.button === 1) { this.viewport.onPointerUp(e); return; }
+        if (e.button === 0) { this.toolManager.onPointerUp(e, this.#getGridCoords(e)); }
     }
 
     onWheel(e) {
         if (e.ctrlKey || e.metaKey) return;
 
         e.preventDefault();
-        this.viewport.zoomByWheel(e.deltaY);
+        this.viewport.onWheel(e.deltaY);
     }
 
     #getGridCoords(e) {

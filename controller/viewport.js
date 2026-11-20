@@ -3,6 +3,11 @@ export class Viewport extends EventTarget {
     static WHEEL_ZOOM_FACTOR = 1.0015;
     static GRID_MIN_PIXEL_SIZE = 8;
 
+    static CHECKER_MIN_TILE_SIZE = 8;
+    static CHECKER_TILE_PIXEL_FACTOR = 8;
+
+    static INITIAL_ZOOM_FACTOR = 0.8;
+
     /**
      * @param {object} opts
      * @param {Element} opts.canvasStack
@@ -36,7 +41,6 @@ export class Viewport extends EventTarget {
         this.height = height;
         this.zoom = this.#clampZoom(this.getInitialZoom());
         this.applyTransform();
-        this.#emitZoomChange();
     }
 
     getZoom() {
@@ -49,30 +53,27 @@ export class Viewport extends EventTarget {
 
         this.zoom = next;
         this.applyTransform();
-        this.#emitZoomChange();
     }
 
-    zoomByWheel(deltaY) {
+    onWheel(deltaY) {
         this.setZoom(this.zoom * Math.pow(Viewport.WHEEL_ZOOM_FACTOR, -deltaY));
     }
 
-    setPan(panX, panY) {
-        this.panX = panX;
-        this.panY = panY;
-        this.applyTransform();
+    onPointerUp(e) {
+
     }
 
-    panBy(dx, dy) {
-        this.setPan(this.panX + dx, this.panY + dy);
+    onPointerDown(e) {
+
     }
 
-    resetPan() {
-        this.setPan(0, 0);
+    onPointerMove(e) {
+
     }
 
     getInitialZoom() {
-        const maxZoomWidth = (window.innerWidth / this.width) * 0.8;
-        const maxZoomHeight = (window.innerHeight / this.height) * 0.8;
+        const maxZoomWidth = (window.innerWidth / this.width) * Viewport.INITIAL_ZOOM_FACTOR;
+        const maxZoomHeight = (window.innerHeight / this.height) * Viewport.INITIAL_ZOOM_FACTOR;
         return Math.floor(Math.min(maxZoomWidth, maxZoomHeight));
     }
 
@@ -112,9 +113,8 @@ export class Viewport extends EventTarget {
     updateCheckerboard() {
         const pixelSize = this.zoom;
 
-        // TODO: Make checkerboard min tile size configurable
-        // Checker tile = 8x pixel size, but never smaller than 8px
-        const checkerSize = Math.max(pixelSize * 8, 8);
+        const checkerSize = Math.max(
+            pixelSize * Viewport.CHECKER_TILE_PIXEL_FACTOR, Viewport.CHECKER_MIN_TILE_SIZE);
 
         this.checkerboard.style.setProperty('--pixel-size', pixelSize + 'px');
         this.checkerboard.style.setProperty('--checker-size', checkerSize + 'px');
@@ -131,11 +131,5 @@ export class Viewport extends EventTarget {
 
     #clampZoom(zoom) {
         return Math.max(Viewport.MIN_ZOOM, Math.min(this.maxZoom, zoom));
-    }
-
-    #emitZoomChange() {
-        this.dispatchEvent(new CustomEvent('zoomchange', {
-            detail: { zoom: this.zoom },
-        }));
     }
 }

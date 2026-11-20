@@ -12,10 +12,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Project structure and initial files
 - Custom context menu for layers list
 - Checkerboard background for drawing area
+- Handle input in input-controller
+- Handle workspace view in viewport
 
 ### Changed
 - Make workspace, toolManager singletons
 - Make layers list follow canvas edge
+- Remove singleton pattern from toolManager and workspace
 
 ### Fixed
 - First render slowness
