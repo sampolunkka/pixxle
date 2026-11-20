@@ -1,18 +1,15 @@
 import {Layer} from "./layer.js";
-import {TRANSPARENT_SENTINEL} from "../const.js";
 
-class Workspace {
+export class Workspace {
     constructor() {
         this.width = null;
         this.height = null;
-        this.zoom = 1;
         this.layers = [];
     }
 
-    init(width, height, canvasElements, zoom) {
+    init(width, height, canvasElements) {
         this.width = width;
         this.height = height;
-        this.zoom = zoom;
 
         canvasElements.forEach((canvasElement, index) => {
             const layer = this.addLayer(canvasElement);
@@ -68,9 +65,6 @@ class Workspace {
         return this.layers[this.layers.length - 1];
     }
 
-    getCanvasBoundingClientRect() {
-        return this.layers[0].canvas.getBoundingClientRect();
-    }
 
     update() {
         this.layers.forEach((layer, index) => {
@@ -78,29 +72,4 @@ class Workspace {
             layer.render();
         });
     }
-
-    clearOverlays() {
-        this.layers.forEach((layer, index) => {
-            layer.clearPreviousOverlayBox();
-            layer.render();
-        })
-    }
-
-    setZoom(zoom) {
-        this.zoom = zoom;
-    }
-
-    getZoom() {
-        return this.zoom;
-    }
-
-    clientCoordsToWorkspaceCoords(clientX, clientY) {
-        const rect = this.getCanvasBoundingClientRect();
-        const zoom = this.zoom;
-        const x = Math.floor((clientX - rect.left) / zoom);
-        const y = Math.floor((clientY - rect.top) / zoom);
-        return { x, y };
-    }
 }
-
-export const workspace = new Workspace();

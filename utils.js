@@ -10,21 +10,11 @@ export function isInsideCanvas(canvas, clientX, clientY) {
     );
 }
 
-export function clientPosToCanvasCoords(canvas, clientX, clientY, zoom) {
-    const rect = canvas.getBoundingClientRect();
-    const x = Math.floor((clientX - rect.left) / zoom);
-    const y = Math.floor((clientY - rect.top) / zoom);
+export function clientPosToGridCoords(boundingRect, clientX, clientY, zoom) {
+    const x = Math.floor((clientX - boundingRect.left) / (zoom));
+    const y = Math.floor((clientY - boundingRect.top) / (zoom));
     return { x, y };
 }
-
-export function clientPosToWorkspaceCoords(workspace, clientX, clientY) {
-    const rect = workspace.getCanvasBoundingClientRect();
-    const zoom = workspace.getZoom();
-    const x = Math.floor((clientX - rect.left) / zoom);
-    const y = Math.floor((clientY - rect.top) / zoom);
-    return { x, y };
-}
-
 export function sixBitHexTo0xColor(hex) {
     hex = hex.replace('#', '');
     return ((parseInt(hex, 16) << 8) | 0xFF) >>> 0;

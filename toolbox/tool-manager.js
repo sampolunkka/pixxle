@@ -1,5 +1,3 @@
-import {clientPosToWorkspaceCoords} from "../utils.js";
-
 export default class ToolManager {
     constructor(workspace, colorPalette) {
         this.workspace = workspace;
@@ -39,20 +37,17 @@ export default class ToolManager {
         document.getElementById('tool-shape').value = shape;
     }
 
-    onPointerDown(e) {
-        const coords = clientPosToWorkspaceCoords(this.workspace, e.clientX, e.clientY);
+    onPointerDown(e, coords) {
         this.getActiveTool().onPointerDown(this.workspace, coords.x, coords.y, this.colorPalette);
         this.workspace.update();
     }
 
-    onPointerMove(e) {
-        const coords = clientPosToWorkspaceCoords(this.workspace, e.clientX, e.clientY);
+    onPointerMove(e, coords) {
         this.getActiveTool().onPointerMove(this.workspace, coords.x, coords.y, this.colorPalette);
         this.workspace.update();
     }
 
-    onPointerUp(e) {
-        const coords = clientPosToWorkspaceCoords(this.workspace, e.clientX, e.clientY);
+    onPointerUp(e, coords) {
         this.getActiveTool().onPointerUp(this.workspace, coords.x, coords.y, this.colorPalette);
         this.workspace.update();
     }
